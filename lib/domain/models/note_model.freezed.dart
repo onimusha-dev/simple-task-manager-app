@@ -79,17 +79,17 @@ as String,
 
 /// Adds pattern-matching-related methods to [NoteModel].
 extension NoteModelPatterns on NoteModel {
-// / A variant of `map` that fallback to returning `orElse`.
-// /
-// / It is equivalent to doing:
-// / ```dart
-// / switch (sealedClass) {
-// /   case final Subclass value:
-// /     return ...;
-// /   case _:
-// /     return orElse();
-// / }
-// / ```
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
 @optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _NoteModel value)?  $default,{required TResult orElse(),}){
 final _that = this;

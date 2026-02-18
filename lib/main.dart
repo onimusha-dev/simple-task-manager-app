@@ -23,24 +23,28 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       home: Scaffold(
-        appBar: AppBar(title: Row(
-          children: [
-            IconButton(onPressed: (){
-              ref.read(noteViewModelProvider.notifier).insertNote(
-                "hi",
-                "hello",
-                "2026-02-18",
-              );
-            }, icon: const Icon(Icons.add)),
-            Text("Journal App")
-          ],
-        )),
-        body: ListView.builder(
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            return ListTile(title: Text(notes[index].title));
+        appBar: AppBar(title: const Text("Journal App")),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            ref
+                .read(noteViewModelProvider.notifier)
+                .insertNote("Demo Note", "This is a demo description", null);
           },
+          child: const Icon(Icons.add),
         ),
+        body: notes.isEmpty
+            ? const Center(child: Text("No notes yet. Tap + to add one!"))
+            : ListView.builder(
+                itemCount: notes.length,
+                itemBuilder: (context, index) {
+                  final note = notes[index];
+                  return ListTile(
+                    title: Text(note.title),
+                    subtitle: Text(note.description ?? ''),
+                    trailing: Text(note.createdAt),
+                  );
+                },
+              ),
       ),
     );
   }

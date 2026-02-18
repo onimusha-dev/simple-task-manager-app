@@ -59,7 +59,7 @@ class $NoteTableTable extends NoteTable
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("is_completed" IN (0, 1))',
     ),
-    defaultValue: const Value(false) as Expression<bool>,
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _dueDateMeta = const VerificationMeta(
     'dueDate',

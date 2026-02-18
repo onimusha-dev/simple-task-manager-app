@@ -1,4 +1,3 @@
-
 import 'package:drift/drift.dart';
 import 'package:journal_app/data/db/app_database.dart';
 import 'package:journal_app/data/db/tables/note_table.dart';
@@ -6,13 +5,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_dao.g.dart';
 
-
 @riverpod
-NoteDao noteDaoProvider(Ref ref){
-  final db = ref.watch(appDatabaseProvider as ProviderListenable<dynamic>);
+NoteDao noteDaoProvider(Ref ref) {
+  final db = ref.watch(appDatabaseProviderProvider);
   return NoteDao(db);
 }
-
 
 @DriftAccessor(tables: [NoteTable])
 class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {

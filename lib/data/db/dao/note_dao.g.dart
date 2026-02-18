@@ -61,4 +61,4 @@ final class NoteDaoProviderProvider
   }
 }
 
-String _$noteDaoProviderHash() => r'a2b84270754aa55ce4f57dc1454c5c3b4093edf7';
+String _$noteDaoProviderHash() => r'50368a9a08c8134aa53d751a7c2ee977ac7a55e6';

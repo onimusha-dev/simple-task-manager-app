@@ -9,6 +9,8 @@ final noteViewModelProvider = NotifierProvider<NoteViewModel, NoteState>(
 class NoteViewModel extends Notifier<NoteState> {
   @override
   NoteState build() {
+    // Load notes when the provider is first read
+    Future.microtask(() => getAllNotes());
     return NoteState();
   }
 
@@ -51,7 +53,7 @@ class NoteViewModel extends Notifier<NoteState> {
       await ref
           .read(noteRepositoryProvider)
           .insertNote(title, description, dueDate);
-      state = state.copyWith(isLoading: false, error: null);
+      await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
         isLoading: false,
@@ -72,7 +74,7 @@ class NoteViewModel extends Notifier<NoteState> {
       await ref
           .read(noteRepositoryProvider)
           .updateNote(id, title, description, dueDate);
-      state = state.copyWith(isLoading: false, error: null);
+      await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
         isLoading: false,
@@ -86,7 +88,7 @@ class NoteViewModel extends Notifier<NoteState> {
 
     try {
       await ref.read(noteRepositoryProvider).deleteNote(id);
-      state = state.copyWith(isLoading: false, error: null);
+      await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
         isLoading: false,
@@ -100,7 +102,7 @@ class NoteViewModel extends Notifier<NoteState> {
 
     try {
       await ref.read(noteRepositoryProvider).deleteAllNotes();
-      state = state.copyWith(isLoading: false, error: null);
+      await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
         isLoading: false,

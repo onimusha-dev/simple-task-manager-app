@@ -8,7 +8,7 @@ part 'note_repository.g.dart';
 
 @riverpod
 NoteRepository noteRepository(Ref ref) {
-  final noteDao = ref.watch(noteDaoProvider as ProviderListenable<dynamic>);
+  final noteDao = ref.watch(noteDaoProviderProvider);
 
   return NoteRepository(noteDao);
 }
