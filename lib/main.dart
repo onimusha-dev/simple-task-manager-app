@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:journal_app/.2/theme/app_theme.dart';
-import 'package:journal_app/.2/theme/theme_provider.dart';
-import 'package:journal_app/ui/view_models/note_view_model.dart';
+import 'package:journal_app/core/theme/app_theme.dart';
+import 'package:journal_app/core/theme/theme_provider.dart';
+import 'package:journal_app/data/db/tables/note_table.dart';
+import 'package:journal_app/feature/home_screen/home_screen.dart';
+import 'package:journal_app/feature/notes/view_models/note_view_model.dart';
 
 void main() {
   runApp(ProviderScope(child: MyApp()));
@@ -14,9 +16,6 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final noteViewModel = ref.watch(noteViewModelProvider);
-
-    final notes = noteViewModel.notes;
 
     return MaterialApp(
       theme: AppTheme.light,
@@ -28,23 +27,16 @@ class MyApp extends ConsumerWidget {
           onPressed: () {
             ref
                 .read(noteViewModelProvider.notifier)
-                .insertNote("Demo Note", "This is a demo description", null);
+                .insertNote(
+                  "Demo Note",
+                  "This is a demo description",
+                  null,
+                  Priority.low,
+                );
           },
           child: const Icon(Icons.add),
         ),
-        body: notes.isEmpty
-            ? const Center(child: Text("No notes yet. Tap + to add one!"))
-            : ListView.builder(
-                itemCount: notes.length,
-                itemBuilder: (context, index) {
-                  final note = notes[index];
-                  return ListTile(
-                    title: Text(note.title),
-                    subtitle: Text(note.description ?? ''),
-                    trailing: Text(note.createdAt),
-                  );
-                },
-              ),
+        body: HomeScreen(),
       ),
     );
   }

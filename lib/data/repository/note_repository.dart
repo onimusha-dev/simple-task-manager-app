@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:journal_app/data/db/dao/note_dao.dart';
 import 'package:journal_app/data/db/app_database.dart';
+import 'package:journal_app/data/db/tables/note_table.dart';
 import 'package:journal_app/domain/models/note_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -44,6 +45,7 @@ class NoteRepository {
     String title,
     String? description,
     String? dueDate,
+    Priority? priority,
   ) async {
     try {
       final note = NoteTableCompanion(
@@ -54,6 +56,7 @@ class NoteRepository {
         dueDate: dueDate != null
             ? Value(DateTime.parse(dueDate))
             : const Value.absent(),
+        priority: priority != null ? Value(priority) : const Value.absent(),
         createdAt: Value(DateTime.now()),
         updatedAt: Value(DateTime.now()),
       );
@@ -75,7 +78,7 @@ class NoteRepository {
   }
 
   // update a note
-  Future<bool> updateNote(
+  Future<int> updateNote(
     int id,
     String? title,
     String? description,
@@ -103,13 +106,32 @@ class NoteRepository {
     }
   }
 
-  Future<bool> toggleCompletion(int id) async {
+  Future<int> toggleCompletion(int id) async {
     try {
       final note = await noteDao.getNoteById(id);
       final isUpdated = await noteDao.updateNote(
-        note.copyWith(isCompleted: !note.isCompleted) as NoteTableCompanion,
+        NoteTableCompanion(
+          id: Value(id),
+          isCompleted: Value(!note.isCompleted),
+          updatedAt: Value(DateTime.now()),
+        ),
       );
       return isUpdated;
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<int> updateNotePriority(int id, Priority priority) async {
+    try {
+      final noteId = await noteDao.updateNote(
+        NoteTableCompanion(
+          id: Value(id),
+          priority: Value(priority),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      return noteId;
     } catch (e) {
       throw Exception(e);
     }

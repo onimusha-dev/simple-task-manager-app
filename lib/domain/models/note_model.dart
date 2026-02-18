@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:journal_app/data/db/app_database.dart';
+import 'package:journal_app/data/db/tables/note_table.dart';
 
 part 'note_model.freezed.dart';
 
@@ -9,9 +10,11 @@ abstract class NoteModel with _$NoteModel {
     @Default(0) int id,
     required String title,
     required String? description,
-    required String? dueDate,
-    required String createdAt,
-    required String updatedAt,
+    required DateTime? dueDate,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required bool isCompleted,
+    required Priority priority,
   }) = _NoteModel;
 
   factory NoteModel.fromEntity(NoteTableData note) {
@@ -19,11 +22,11 @@ abstract class NoteModel with _$NoteModel {
       id: note.id,
       title: note.title,
       description: note.description,
-      dueDate: note.dueDate != null
-          ? formatDateAndTimeDifference(note.dueDate!)
-          : null,
-      createdAt: formatDateAndTimeDifference(note.createdAt),
-      updatedAt: formatDateAndTimeDifference(note.updatedAt),
+      dueDate: note.dueDate,
+      createdAt: note.createdAt,
+      updatedAt: note.updatedAt,
+      isCompleted: note.isCompleted,
+      priority: note.priority,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:journal_app/data/db/tables/note_table.dart';
 import 'package:journal_app/data/repository/note_repository.dart';
-import 'package:journal_app/ui/view_models/state/note_state.dart';
+import 'package:journal_app/feature/notes/view_models/state/note_state.dart';
 
 final noteViewModelProvider = NotifierProvider<NoteViewModel, NoteState>(
   () => NoteViewModel(),
@@ -46,18 +47,47 @@ class NoteViewModel extends Notifier<NoteState> {
     String title,
     String? description,
     String? dueDate,
+    Priority? priority,
   ) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       await ref
           .read(noteRepositoryProvider)
-          .insertNote(title, description, dueDate);
+          .insertNote(title, description, dueDate, priority);
       await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to insert note: $e\n$s',
+      );
+    }
+  }
+
+  Future<void> toggleNoteCompletion(int id) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      await ref.read(noteRepositoryProvider).toggleCompletion(id);
+      await getAllNotes();
+    } catch (e, s) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to toggle note completion: $e\n$s',
+      );
+    }
+  }
+
+  Future<void> updateNotePriority(int id, Priority priority) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      await ref.read(noteRepositoryProvider).updateNotePriority(id, priority);
+      await getAllNotes();
+    } catch (e, s) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to update note priority: $e\n$s',
       );
     }
   }

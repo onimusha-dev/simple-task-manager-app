@@ -97,6 +97,16 @@ class $NoteTableTable extends NoteTable
     defaultValue: currentDateAndTime,
   );
   @override
+  late final GeneratedColumnWithTypeConverter<Priority, int> priority =
+      GeneratedColumn<int>(
+        'priority',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<Priority>($NoteTableTable.$converterpriority);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     title,
@@ -105,6 +115,7 @@ class $NoteTableTable extends NoteTable
     dueDate,
     createdAt,
     updatedAt,
+    priority,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -204,6 +215,12 @@ class $NoteTableTable extends NoteTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      priority: $NoteTableTable.$converterpriority.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}priority'],
+        )!,
+      ),
     );
   }
 
@@ -211,6 +228,9 @@ class $NoteTableTable extends NoteTable
   $NoteTableTable createAlias(String alias) {
     return $NoteTableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<Priority, int, int> $converterpriority =
+      const EnumIndexConverter<Priority>(Priority.values);
 }
 
 class NoteTableData extends DataClass implements Insertable<NoteTableData> {
@@ -221,6 +241,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
   final DateTime? dueDate;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final Priority priority;
   const NoteTableData({
     required this.id,
     required this.title,
@@ -229,6 +250,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     this.dueDate,
     required this.createdAt,
     required this.updatedAt,
+    required this.priority,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -242,6 +264,11 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['priority'] = Variable<int>(
+        $NoteTableTable.$converterpriority.toSql(priority),
+      );
+    }
     return map;
   }
 
@@ -256,6 +283,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
           : Value(dueDate),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      priority: Value(priority),
     );
   }
 
@@ -272,6 +300,9 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
       dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      priority: $NoteTableTable.$converterpriority.fromJson(
+        serializer.fromJson<int>(json['priority']),
+      ),
     );
   }
   @override
@@ -285,6 +316,9 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
       'dueDate': serializer.toJson<DateTime?>(dueDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'priority': serializer.toJson<int>(
+        $NoteTableTable.$converterpriority.toJson(priority),
+      ),
     };
   }
 
@@ -296,6 +330,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     Value<DateTime?> dueDate = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
+    Priority? priority,
   }) => NoteTableData(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -304,6 +339,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     dueDate: dueDate.present ? dueDate.value : this.dueDate,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    priority: priority ?? this.priority,
   );
   NoteTableData copyWithCompanion(NoteTableCompanion data) {
     return NoteTableData(
@@ -318,6 +354,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
       dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      priority: data.priority.present ? data.priority.value : this.priority,
     );
   }
 
@@ -330,7 +367,8 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
           ..write('isCompleted: $isCompleted, ')
           ..write('dueDate: $dueDate, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('priority: $priority')
           ..write(')'))
         .toString();
   }
@@ -344,6 +382,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     dueDate,
     createdAt,
     updatedAt,
+    priority,
   );
   @override
   bool operator ==(Object other) =>
@@ -355,7 +394,8 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
           other.isCompleted == this.isCompleted &&
           other.dueDate == this.dueDate &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.priority == this.priority);
 }
 
 class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
@@ -366,6 +406,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
   final Value<DateTime?> dueDate;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<Priority> priority;
   const NoteTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -374,6 +415,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
     this.dueDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.priority = const Value.absent(),
   });
   NoteTableCompanion.insert({
     this.id = const Value.absent(),
@@ -383,6 +425,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
     this.dueDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.priority = const Value.absent(),
   }) : title = Value(title),
        description = Value(description);
   static Insertable<NoteTableData> custom({
@@ -393,6 +436,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
     Expression<DateTime>? dueDate,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<int>? priority,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -402,6 +446,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
       if (dueDate != null) 'due_date': dueDate,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (priority != null) 'priority': priority,
     });
   }
 
@@ -413,6 +458,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
     Value<DateTime?>? dueDate,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<Priority>? priority,
   }) {
     return NoteTableCompanion(
       id: id ?? this.id,
@@ -422,6 +468,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
       dueDate: dueDate ?? this.dueDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      priority: priority ?? this.priority,
     );
   }
 
@@ -449,6 +496,11 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (priority.present) {
+      map['priority'] = Variable<int>(
+        $NoteTableTable.$converterpriority.toSql(priority.value),
+      );
+    }
     return map;
   }
 
@@ -461,7 +513,8 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
           ..write('isCompleted: $isCompleted, ')
           ..write('dueDate: $dueDate, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('priority: $priority')
           ..write(')'))
         .toString();
   }
@@ -488,6 +541,7 @@ typedef $$NoteTableTableCreateCompanionBuilder =
       Value<DateTime?> dueDate,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<Priority> priority,
     });
 typedef $$NoteTableTableUpdateCompanionBuilder =
     NoteTableCompanion Function({
@@ -498,6 +552,7 @@ typedef $$NoteTableTableUpdateCompanionBuilder =
       Value<DateTime?> dueDate,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<Priority> priority,
     });
 
 class $$NoteTableTableFilterComposer
@@ -543,6 +598,12 @@ class $$NoteTableTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<Priority, Priority, int> get priority =>
+      $composableBuilder(
+        column: $table.priority,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 }
 
 class $$NoteTableTableOrderingComposer
@@ -588,6 +649,11 @@ class $$NoteTableTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NoteTableTableAnnotationComposer
@@ -623,6 +689,9 @@ class $$NoteTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Priority, int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
 }
 
 class $$NoteTableTableTableManager
@@ -663,6 +732,7 @@ class $$NoteTableTableTableManager
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<Priority> priority = const Value.absent(),
               }) => NoteTableCompanion(
                 id: id,
                 title: title,
@@ -671,6 +741,7 @@ class $$NoteTableTableTableManager
                 dueDate: dueDate,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                priority: priority,
               ),
           createCompanionCallback:
               ({
@@ -681,6 +752,7 @@ class $$NoteTableTableTableManager
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<Priority> priority = const Value.absent(),
               }) => NoteTableCompanion.insert(
                 id: id,
                 title: title,
@@ -689,6 +761,7 @@ class $$NoteTableTableTableManager
                 dueDate: dueDate,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                priority: priority,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

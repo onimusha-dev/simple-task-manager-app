@@ -24,7 +24,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  // migration strategy to add new columns to the db
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        // Add the priority column (intEnum, default 0 = Priority.none)
+        await customStatement(
+          'ALTER TABLE note_table ADD COLUMN priority INTEGER NOT NULL DEFAULT 0',
+        );
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(

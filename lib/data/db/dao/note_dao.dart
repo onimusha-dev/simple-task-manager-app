@@ -38,9 +38,11 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
     return (select(noteTable)..where((t) => t.id.equals(id))).getSingle();
   }
 
-  // update a note
-  Future<bool> updateNote(NoteTableCompanion note) {
-    return (update(noteTable).replace(note));
+  // update a note (uses write + where for partial updates)
+  Future<int> updateNote(NoteTableCompanion note) {
+    return (update(
+      noteTable,
+    )..where((t) => t.id.equals(note.id.value))).write(note);
   }
 
   // delete a note
