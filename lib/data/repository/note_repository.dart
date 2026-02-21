@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:fuck_your_todos/core/utils/input_formatter.dart';
 import 'package:fuck_your_todos/data/db/dao/note_dao.dart';
 import 'package:fuck_your_todos/data/db/app_database.dart';
 import 'package:fuck_your_todos/data/db/tables/note_table.dart';
@@ -49,9 +50,9 @@ class NoteRepository {
   ) async {
     try {
       final note = NoteTableCompanion(
-        title: Value(title),
+        title: Value(getSubString(title, 50)),
         description: description != null
-            ? Value(description)
+            ? Value(getSubString(description, 200))
             : const Value.absent(),
         dueDate: dueDate != null
             ? Value(DateTime.parse(dueDate))
@@ -90,9 +91,11 @@ class NoteRepository {
       }
       final note = NoteTableCompanion(
         id: Value(id),
-        title: title != null ? Value(title) : const Value.absent(),
+        title: title != null
+            ? Value(getSubString(title, 50))
+            : const Value.absent(),
         description: description != null
-            ? Value(description)
+            ? Value(getSubString(description, 200))
             : const Value.absent(),
         dueDate: dueDate != null
             ? Value(DateTime.parse(dueDate))

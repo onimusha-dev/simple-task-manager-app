@@ -42,9 +42,13 @@ class $NoteTableTable extends NoteTable
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
     aliasedName,
-    false,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _isCompletedMeta = const VerificationMeta(
     'isCompleted',
@@ -148,8 +152,6 @@ class $NoteTableTable extends NoteTable
           _descriptionMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
     }
     if (data.containsKey('is_completed')) {
       context.handle(
@@ -198,7 +200,7 @@ class $NoteTableTable extends NoteTable
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
-      )!,
+      ),
       isCompleted: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_completed'],
@@ -236,7 +238,7 @@ class $NoteTableTable extends NoteTable
 class NoteTableData extends DataClass implements Insertable<NoteTableData> {
   final int id;
   final String title;
-  final String description;
+  final String? description;
   final bool isCompleted;
   final DateTime? dueDate;
   final DateTime createdAt;
@@ -245,7 +247,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
   const NoteTableData({
     required this.id,
     required this.title,
-    required this.description,
+    this.description,
     required this.isCompleted,
     this.dueDate,
     required this.createdAt,
@@ -257,7 +259,9 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
-    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
     map['is_completed'] = Variable<bool>(isCompleted);
     if (!nullToAbsent || dueDate != null) {
       map['due_date'] = Variable<DateTime>(dueDate);
@@ -276,7 +280,9 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     return NoteTableCompanion(
       id: Value(id),
       title: Value(title),
-      description: Value(description),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
       isCompleted: Value(isCompleted),
       dueDate: dueDate == null && nullToAbsent
           ? const Value.absent()
@@ -295,7 +301,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     return NoteTableData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      description: serializer.fromJson<String>(json['description']),
+      description: serializer.fromJson<String?>(json['description']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -311,7 +317,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
-      'description': serializer.toJson<String>(description),
+      'description': serializer.toJson<String?>(description),
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'dueDate': serializer.toJson<DateTime?>(dueDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -325,7 +331,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
   NoteTableData copyWith({
     int? id,
     String? title,
-    String? description,
+    Value<String?> description = const Value.absent(),
     bool? isCompleted,
     Value<DateTime?> dueDate = const Value.absent(),
     DateTime? createdAt,
@@ -334,7 +340,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
   }) => NoteTableData(
     id: id ?? this.id,
     title: title ?? this.title,
-    description: description ?? this.description,
+    description: description.present ? description.value : this.description,
     isCompleted: isCompleted ?? this.isCompleted,
     dueDate: dueDate.present ? dueDate.value : this.dueDate,
     createdAt: createdAt ?? this.createdAt,
@@ -401,7 +407,7 @@ class NoteTableData extends DataClass implements Insertable<NoteTableData> {
 class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
   final Value<int> id;
   final Value<String> title;
-  final Value<String> description;
+  final Value<String?> description;
   final Value<bool> isCompleted;
   final Value<DateTime?> dueDate;
   final Value<DateTime> createdAt;
@@ -420,14 +426,13 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
   NoteTableCompanion.insert({
     this.id = const Value.absent(),
     required String title,
-    required String description,
+    this.description = const Value.absent(),
     this.isCompleted = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.priority = const Value.absent(),
-  }) : title = Value(title),
-       description = Value(description);
+  }) : title = Value(title);
   static Insertable<NoteTableData> custom({
     Expression<int>? id,
     Expression<String>? title,
@@ -453,7 +458,7 @@ class NoteTableCompanion extends UpdateCompanion<NoteTableData> {
   NoteTableCompanion copyWith({
     Value<int>? id,
     Value<String>? title,
-    Value<String>? description,
+    Value<String?>? description,
     Value<bool>? isCompleted,
     Value<DateTime?>? dueDate,
     Value<DateTime>? createdAt,
@@ -536,7 +541,7 @@ typedef $$NoteTableTableCreateCompanionBuilder =
     NoteTableCompanion Function({
       Value<int> id,
       required String title,
-      required String description,
+      Value<String?> description,
       Value<bool> isCompleted,
       Value<DateTime?> dueDate,
       Value<DateTime> createdAt,
@@ -547,7 +552,7 @@ typedef $$NoteTableTableUpdateCompanionBuilder =
     NoteTableCompanion Function({
       Value<int> id,
       Value<String> title,
-      Value<String> description,
+      Value<String?> description,
       Value<bool> isCompleted,
       Value<DateTime?> dueDate,
       Value<DateTime> createdAt,
@@ -727,7 +732,7 @@ class $$NoteTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
-                Value<String> description = const Value.absent(),
+                Value<String?> description = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -747,7 +752,7 @@ class $$NoteTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
-                required String description,
+                Value<String?> description = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),

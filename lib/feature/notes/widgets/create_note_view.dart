@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 import 'package:fuck_your_todos/domain/models/note_model.dart';
@@ -32,10 +33,17 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
   DateTime? _selectedDateTime;
   Priority _selectedPriority = Priority.none;
 
+  // Key lets us programmatically open the priority popup
+  final _priorityMenuKey = GlobalKey<PopupMenuButtonState<Priority>>();
+
   bool get _isEditMode => widget.noteToEdit != null;
 
   // Rebuild save-button reactively when title changes
-  bool get _canSave => _titleController.text.trim().isNotEmpty;
+  bool get _canSave {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+    return title.isNotEmpty && title.length <= 50 && description.length <= 200;
+  }
 
   @override
   void initState() {
@@ -265,6 +273,7 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
             controller: _titleController,
             hint: 'Note title…',
             cs: cs,
+            type: TextFieldType.title,
           ),
           const SizedBox(height: 12),
 
@@ -274,6 +283,7 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
             hint: 'Description (optional)',
             cs: cs,
             maxLines: 3,
+            type: TextFieldType.description,
           ),
           const SizedBox(height: 20),
 
@@ -295,21 +305,18 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                     : null,
               ),
 
-              // Priority chip (wrapped in PopupMenuButton)
+              // Priority chip — tap to open menu (when none); tap to clear (when set)
               PopupMenuButton<Priority>(
+                key: _priorityMenuKey,
                 onSelected: (p) => setState(() => _selectedPriority = p),
-                offset: const Offset(0, -148),
+                offset: const Offset(0, -120),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
                 color: cs.surfaceContainerHighest,
                 itemBuilder: (_) =>
-                    [
-                      Priority.high,
-                      Priority.medium,
-                      Priority.low,
-                      Priority.none,
-                    ].map((p) {
+                    [Priority.high, Priority.medium, Priority.low].map((p) {
+                      final isSelected = _selectedPriority == p;
                       return PopupMenuItem<Priority>(
                         value: p,
                         child: Row(
@@ -320,10 +327,23 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                               size: 20,
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              _priorityLabel(p),
-                              style: TextStyle(color: cs.onSurface),
+                            Expanded(
+                              child: Text(
+                                _priorityLabel(p),
+                                style: TextStyle(
+                                  color: cs.onSurface,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.normal,
+                                ),
+                              ),
                             ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_rounded,
+                                size: 16,
+                                color: _priorityColor(p),
+                              ),
                           ],
                         ),
                       );
@@ -332,7 +352,14 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                   icon: _priorityIcon(_selectedPriority),
                   label: _priorityLabel(_selectedPriority),
                   color: _priorityColor(_selectedPriority),
-                  onTap: null,
+                  // If a priority is set: clear it. If none: open the menu.
+                  onTap: () {
+                    if (_selectedPriority != Priority.none) {
+                      setState(() => _selectedPriority = Priority.none);
+                    } else {
+                      _priorityMenuKey.currentState?.showButtonMenu();
+                    }
+                  },
                 ),
               ),
             ],
@@ -381,31 +408,71 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
     required TextEditingController controller,
     required String hint,
     required ColorScheme cs,
+    required TextFieldType type,
     int maxLines = 1,
   }) {
-    return TextField(
-      controller: controller,
-      style: TextStyle(color: cs.onSurface),
-      maxLines: maxLines,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: cs.outline),
-        filled: true,
-        fillColor: cs.surfaceContainerHigh,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: cs.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
+    final maxLength = type == TextFieldType.title ? 50 : 200;
+
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final length = value.text.length;
+        final isOverLimit = length > maxLength;
+
+        final borderColor = isOverLimit ? cs.error : cs.primary;
+        final counterColor = isOverLimit ? cs.error : cs.outline;
+
+        return TextField(
+          controller: controller,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          maxLengthEnforcement: MaxLengthEnforcement.none, // allow overflow
+          style: TextStyle(color: cs.onSurface),
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: cs.outline),
+            filled: true,
+            fillColor: cs.surfaceContainerHigh,
+
+            // 👇 dynamic border
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: borderColor, width: 1.5),
+            ),
+
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: isOverLimit
+                    ? cs.error.withValues(alpha: 0.5)
+                    : Colors.transparent,
+              ),
+            ),
+
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+
+            // ⭐ floating counter top-left
+            label: Text(
+              '$length/$maxLength',
+              style: TextStyle(color: counterColor),
+            ),
+
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+
+            // ❌ remove bottom counter
+            counterText: '',
+          ),
+        );
+      },
     );
   }
 }
@@ -472,3 +539,5 @@ class _NoteChip extends StatelessWidget {
     );
   }
 }
+
+enum TextFieldType { description, title }

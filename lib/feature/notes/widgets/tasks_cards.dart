@@ -50,26 +50,52 @@ class TaskCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(10),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Icon(
+                      Icons.collections,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.5),
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               _buildOptionTile(
@@ -106,6 +132,7 @@ class TaskCard extends ConsumerWidget {
                     context: context,
                     isScrollControlled: true,
                     useSafeArea: true,
+                    enableDrag: false,
                     backgroundColor: Colors.transparent,
                     builder: (context) =>
                         CreateNoteView(noteToEdit: actualNote),
@@ -162,6 +189,7 @@ class TaskCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
+      onLongPress: () => _showTaskOptions(context, ref),
       onTap: () => _showTaskOptions(context, ref),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -173,32 +201,22 @@ class TaskCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Checkbox indicator
+            // this is the task logo
             Container(
-              width: 20,
-              height: 20,
+              height: 44,
+              width: 44,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isCompleted
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.transparent,
-                border: Border.all(
-                  color: isCompleted
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
-                  width: 2,
-                ),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).colorScheme.primary,
               ),
-              child: isCompleted
-                  ? Icon(
-                      Icons.check,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    )
-                  : null,
+              child: Icon(
+                Icons.collections,
+                size: 32,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
             const SizedBox(width: 16),
-
             // Task content
             Expanded(
               child: Column(
@@ -238,6 +256,35 @@ class TaskCard extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+
+            // this is the check box
+            Column(
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCompleted
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: isCompleted
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline,
+                      width: 2,
+                    ),
+                  ),
+                  child: isCompleted
+                      ? Icon(
+                          Icons.check,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        )
+                      : null,
+                ),
+              ],
             ),
           ],
         ),
