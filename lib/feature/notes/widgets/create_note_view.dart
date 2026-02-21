@@ -461,10 +461,12 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
             ),
 
             // ⭐ floating counter top-left
-            label: Text(
-              '$length/$maxLength',
-              style: TextStyle(color: counterColor),
-            ),
+            label: length < 35
+                ? null
+                : Text(
+                    '$length/$maxLength',
+                    style: TextStyle(color: counterColor),
+                  ),
 
             floatingLabelBehavior: FloatingLabelBehavior.always,
 

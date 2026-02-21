@@ -5,6 +5,7 @@ import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
 import 'package:fuck_your_todos/feature/profile_screen/profile_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/settings_screen.dart';
 
 class MainAppScreen extends ConsumerStatefulWidget {
   final int initialIndex;
@@ -22,7 +23,7 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
     CalendarScreen(),
     // FocusScreen(),
     Placeholder(),
-    Placeholder(),
+    ProfileScreen(),
   ];
 
   @override
@@ -50,7 +51,7 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const ProfileScreen(),
+                            builder: (context) => const SettingsScreen(),
                           ),
                         );
                       },

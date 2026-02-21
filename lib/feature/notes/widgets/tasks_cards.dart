@@ -58,11 +58,11 @@ class TaskCard extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.circular(10),
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                     ),
                     child: Icon(
                       Icons.collections,
-                      color: Theme.of(context).colorScheme.onPrimary,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -147,6 +147,18 @@ class TaskCard extends ConsumerWidget {
                 onTap: () {
                   ref.read(noteViewModelProvider.notifier).deleteNote(id);
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Task deleted',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      duration: Duration(seconds: 3),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                    ),
+                  );
                 },
               ),
             ],
@@ -208,12 +220,12 @@ class TaskCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
                 borderRadius: BorderRadius.circular(10),
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.primaryContainer,
               ),
               child: Icon(
                 Icons.collections,
                 size: 32,
-                color: Theme.of(context).colorScheme.onPrimary,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),
             const SizedBox(width: 16),
