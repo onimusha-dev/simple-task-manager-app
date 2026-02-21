@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
-import 'package:journal_app/domain/models/note_model.dart';
-import 'package:journal_app/feature/notes/view_models/note_view_model.dart';
-import 'package:journal_app/feature/notes/widgets/task_priority_widget.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/domain/models/note_model.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
+import 'package:fuck_your_todos/feature/notes/widgets/task_priority_widget.dart';
 
 class TaskCard extends ConsumerWidget {
   const TaskCard({
@@ -94,20 +95,21 @@ class TaskCard extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.secondary,
                 onTap: () {
                   // Get the actual task from provider to preserve all original data
-                  // final taskState = ref.read(taskProvider);
-                  // final actualTask = taskState.tasks.firstWhere(
-                  //   (t) => t.id == id,
-                  // );
+                  final taskState = ref.read(noteViewModelProvider);
+                  final actualNote = taskState.notes.firstWhere(
+                    (t) => t.id == id,
+                  );
 
                   Navigator.pop(context);
                   // Open edit task bottom sheet with actual task data
-                  // showModalBottomSheet(
-                  //   context: context,
-                  //   isScrollControlled: true,
-                  //   useSafeArea: true,
-                  //   backgroundColor: Colors.transparent,
-                  // builder: (context) => AddTasks(taskToEdit: actualTask),
-                  // );
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) =>
+                        CreateNoteView(noteToEdit: actualNote),
+                  );
                 },
               ),
               _buildOptionTile(

@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
-import 'package:journal_app/data/db/dao/note_dao.dart';
-import 'package:journal_app/data/db/app_database.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
-import 'package:journal_app/domain/models/note_model.dart';
+import 'package:fuck_your_todos/data/db/dao/note_dao.dart';
+import 'package:fuck_your_todos/data/db/app_database.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/domain/models/note_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_repository.g.dart';

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:journal_app/data/db/app_database.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/data/db/app_database.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_dao.g.dart';

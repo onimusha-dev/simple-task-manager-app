@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:journal_app/core/theme/app_theme.dart';
-import 'package:journal_app/core/theme/theme_provider.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
-import 'package:journal_app/feature/home_screen/home_screen.dart';
-import 'package:journal_app/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/core/theme/app_theme.dart';
+import 'package:fuck_your_todos/core/theme/theme_provider.dart';
+import 'package:fuck_your_todos/main_app_screen.dart';
 
 void main() {
   runApp(ProviderScope(child: MyApp()));
@@ -21,23 +19,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      home: Scaffold(
-        appBar: AppBar(title: const Text("Journal App")),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            ref
-                .read(noteViewModelProvider.notifier)
-                .insertNote(
-                  "Demo Note",
-                  "This is a demo description",
-                  null,
-                  Priority.low,
-                );
-          },
-          child: const Icon(Icons.add),
-        ),
-        body: HomeScreen(),
-      ),
+      home: Scaffold(body: MainAppScreen()),
     );
   }
 }

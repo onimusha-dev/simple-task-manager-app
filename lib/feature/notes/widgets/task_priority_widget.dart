@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 
 class PriorityWidget extends StatelessWidget {
   const PriorityWidget({super.key, required this.priority});

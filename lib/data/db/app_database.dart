@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:journal_app/data/db/dao/note_dao.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/data/db/dao/note_dao.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

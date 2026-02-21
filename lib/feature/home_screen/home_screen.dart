@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:journal_app/core/utils/date_formatter.dart';
-import 'package:journal_app/feature/home_screen/widgets/no_task_placeholder.dart';
-import 'package:journal_app/feature/home_screen/widgets/no_task_remaining_widget.dart';
-import 'package:journal_app/feature/notes/view_models/note_view_model.dart';
-import 'package:journal_app/feature/notes/widgets/tasks_cards.dart';
+import 'package:fuck_your_todos/core/utils/date_formatter.dart';
+import 'package:fuck_your_todos/feature/home_screen/widgets/no_task_placeholder.dart';
+import 'package:fuck_your_todos/feature/home_screen/widgets/no_task_remaining_widget.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/feature/notes/widgets/tasks_cards.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

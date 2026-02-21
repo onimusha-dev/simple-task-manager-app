@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:journal_app/core/constants/constants.dart';
+import 'package:fuck_your_todos/core/constants/constants.dart';
 
 class NoTaskPlaceholder extends StatelessWidget {
   const NoTaskPlaceholder({super.key});

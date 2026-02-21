@@ -1,6 +1,6 @@
-name: journal_app
-description: "A new Flutter project."
-publish_to: 'none' 
+name: fuck_your_todos
+description: "This is a app to fuck your todos."
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -13,7 +13,6 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.0.3
-  # riverpod_annotation: ^4.0.2
   riverpod_annotation: ^3.0.3
   freezed_annotation: ^3.1.0
   json_annotation: ^4.10.0
@@ -34,11 +33,20 @@ dev_dependencies:
   build_runner: ^2.11.1
   riverpod_generator: ^3.0.0
 
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/logo.png"
+
 flutter:
   uses-material-design: true
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+
   # fonts:
   #   - family: Schyler
   #     fonts:
@@ -50,4 +58,3 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  

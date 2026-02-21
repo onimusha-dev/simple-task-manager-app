@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:journal_app/data/db/tables/note_table.dart';
-import 'package:journal_app/data/repository/note_repository.dart';
-import 'package:journal_app/feature/notes/view_models/state/note_state.dart';
+import 'package:fuck_your_todos/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/data/repository/note_repository.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/state/note_state.dart';
 
 final noteViewModelProvider = NotifierProvider<NoteViewModel, NoteState>(
   () => NoteViewModel(),
