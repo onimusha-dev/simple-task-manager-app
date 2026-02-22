@@ -40,15 +40,14 @@ class PriorityWidget extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: _getColor(context).withAlpha(100),
+                color: _getColor(context).withValues(alpha: 0.4),
                 width: 1,
               ),
-              color: _getColor(context).withAlpha(50),
+              color: _getColor(context).withValues(alpha: 0.2),
             ),
             child: Text(
               _getPriorityName(),
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: _getColor(context),
                 fontWeight: FontWeight.bold,
               ),

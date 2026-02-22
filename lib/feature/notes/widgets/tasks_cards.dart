@@ -37,7 +37,7 @@ class TaskCard extends ConsumerWidget {
       ),
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -72,23 +72,24 @@ class TaskCard extends ConsumerWidget {
                       children: [
                         Text(
                           title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           description,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withValues(alpha: 0.5),
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.8),
+                              ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -177,6 +178,7 @@ class TaskCard extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -187,9 +189,8 @@ class TaskCard extends ConsumerWidget {
       ),
       title: Text(
         label,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.bold,
           color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
@@ -200,105 +201,116 @@ class TaskCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onLongPress: () => _showTaskOptions(context, ref),
-      onTap: () => _showTaskOptions(context, ref),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // this is the task logo
-            Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.circular(10),
-                color: Theme.of(context).colorScheme.primaryContainer,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onLongPress: () => _showTaskOptions(context, ref),
+        onTap: () => _showTaskOptions(context, ref),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // this is the task logo
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                ),
+                child: Icon(
+                  Icons.collections,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
-              child: Icon(
-                Icons.collections,
-                size: 32,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Task content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: isCompleted
-                          ? Theme.of(context).colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.6)
-                          : Theme.of(context).colorScheme.onSurface,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
+              const SizedBox(width: 16),
+              // Task content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isCompleted
+                            ? Theme.of(context).colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5)
+                            : Theme.of(context).colorScheme.onSurface,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        formatDateAndTimeDifference(dueTime),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          formatDateAndTimeDifference(dueTime),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                        const Spacer(),
+                        // TaskLableWidget(labels: tags),
+                        const SizedBox(width: 4),
+                        PriorityWidget(priority: priority),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // this is the check box
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      ref
+                          .read(noteViewModelProvider.notifier)
+                          .toggleNoteCompletion(id);
+                    },
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isCompleted
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: isCompleted
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outline,
+                          width: 2,
                         ),
                       ),
-                      const Spacer(),
-                      // TaskLableWidget(labels: tags),
-                      const SizedBox(width: 4),
-                      PriorityWidget(priority: priority),
-                    ],
+                      child: isCompleted
+                          ? Icon(
+                              Icons.check_rounded,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            )
+                          : null,
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            // this is the check box
-            Column(
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isCompleted
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: isCompleted
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
-                      width: 2,
-                    ),
-                  ),
-                  child: isCompleted
-                      ? Icon(
-                          Icons.check,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        )
-                      : null,
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

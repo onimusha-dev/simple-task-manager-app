@@ -258,8 +258,7 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
               const SizedBox(width: 12),
               Text(
                 _isEditMode ? 'Edit Note' : 'New Note',
-                style: TextStyle(
-                  fontSize: 20,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: cs.onSurface,
                 ),
@@ -330,12 +329,13 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                             Expanded(
                               child: Text(
                                 _priorityLabel(p),
-                                style: TextStyle(
-                                  color: cs.onSurface,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.normal,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: cs.onSurface,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
                               ),
                             ),
                             if (isSelected)
@@ -381,9 +381,8 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                 ),
                 label: Text(
                   _isEditMode ? 'Update Note' : 'Create Note',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -427,11 +426,15 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
           maxLines: maxLines,
           maxLength: maxLength,
           maxLengthEnforcement: MaxLengthEnforcement.none, // allow overflow
-          style: TextStyle(color: cs.onSurface),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: cs.onSurface),
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: cs.outline),
+            hintStyle: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: cs.outline),
             filled: true,
             fillColor: cs.surfaceContainerHigh,
 
@@ -465,7 +468,10 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                 ? null
                 : Text(
                     '$length/$maxLength',
-                    style: TextStyle(color: counterColor),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: counterColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
             floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -522,10 +528,9 @@ class _NoteChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 13,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: color,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
             if (onClear != null) ...[

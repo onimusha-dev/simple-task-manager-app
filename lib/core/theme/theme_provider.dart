@@ -180,6 +180,8 @@ ThemeData buildTheme(
     appBarTheme: AppBarTheme(
       centerTitle: true,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       backgroundColor: Colors.transparent,
       foregroundColor: isDark
           ? const Color(0xFFE8E8EE)

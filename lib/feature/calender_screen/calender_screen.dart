@@ -58,7 +58,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         SizedBox(height: 16),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 1),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ListView.builder(
               itemCount: selectedTasks.length,
               itemBuilder: (context, index) {

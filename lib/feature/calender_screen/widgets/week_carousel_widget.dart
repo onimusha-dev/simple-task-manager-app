@@ -184,16 +184,15 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
             children: [
               Text(
                 monthNames[currentWeekStart.month - 1],
-                style: const TextStyle(
-                  fontSize: 14,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.5,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               Text(
                 '${currentWeekStart.year}',
-                style: TextStyle(
-                  fontSize: 11,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
@@ -248,8 +247,7 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
         children: [
           Text(
             dayName,
-            style: TextStyle(
-              fontSize: 10,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w500,
               color: isSelected ? selectedTextColor : dayTextColor,
             ),
@@ -257,8 +255,7 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
           const SizedBox(height: 4),
           Text(
             '$dayNumber',
-            style: TextStyle(
-              fontSize: 16,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: isSelected ? selectedTextColor : textColor,
             ),

@@ -1,10 +1,12 @@
+import 'package:flutter/cupertino.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calendar_date_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
-import 'package:fuck_your_todos/feature/profile_screen/profile_screen.dart';
+import 'package:fuck_your_todos/feature/profile_screen/analytics_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/settings_screen.dart';
 
 class MainAppScreen extends ConsumerStatefulWidget {
@@ -21,9 +23,8 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
   final List<Widget> pages = [
     HomeScreen(),
     CalendarScreen(),
-    // // FocusScreen(),
-    // Placeholder(),
-    // ProfileScreen(),
+    Placeholder(),
+    AnalyticsScreen(),
   ];
 
   @override
@@ -36,6 +37,34 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tasksState = ref.watch(noteViewModelProvider);
+    final allTasks = tasksState.notes;
+
+    int calculateStreak() {
+      int streak = 0;
+      final now = DateTime.now();
+      for (int i = 0; i <= 3650; i++) {
+        final day = now.subtract(Duration(days: i));
+        final completed = allTasks.where((t) {
+          final target = t.dueDate ?? t.createdAt;
+          return target.year == day.year &&
+              target.month == day.month &&
+              target.day == day.day &&
+              t.isCompleted;
+        }).length;
+
+        if (i == 0 && completed == 0) continue;
+        if (completed > 0) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    final currentStreak = calculateStreak();
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: currentIndex == 1
@@ -58,11 +87,9 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                       icon: Row(
                         children: [
                           Text(
-                            '🔥677',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            '$currentStreak 🔥',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           Icon(Icons.person),
                         ],
@@ -117,9 +144,18 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.home, size: 24),
+                        Icon(
+                          currentIndex == 0
+                              ? CupertinoIcons.house_fill
+                              : CupertinoIcons.house,
+                          size: 26,
+                        ),
                         SizedBox(height: 4),
-                        Text('Home', style: TextStyle(fontSize: 12)),
+                        Text(
+                          'Home',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
@@ -139,9 +175,18 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.calendar_today, size: 24),
+                        Icon(
+                          currentIndex == 1
+                              ? CupertinoIcons.calendar_today
+                              : CupertinoIcons.calendar,
+                          size: 26,
+                        ),
                         SizedBox(height: 4),
-                        Text('Calendar', style: TextStyle(fontSize: 12)),
+                        Text(
+                          'Calendar',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
@@ -162,9 +207,18 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.timer, size: 24),
+                        Icon(
+                          currentIndex == 2
+                              ? CupertinoIcons.timer_fill
+                              : CupertinoIcons.timer,
+                          size: 26,
+                        ),
                         SizedBox(height: 4),
-                        Text('Focus', style: TextStyle(fontSize: 12)),
+                        Text(
+                          'Focus',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
@@ -184,9 +238,18 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.person, size: 24),
+                        Icon(
+                          currentIndex == 3
+                              ? CupertinoIcons.chart_bar_fill
+                              : CupertinoIcons.chart_bar,
+                          size: 26,
+                        ),
                         SizedBox(height: 4),
-                        Text('Profile', style: TextStyle(fontSize: 12)),
+                        Text(
+                          'Analytics',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
