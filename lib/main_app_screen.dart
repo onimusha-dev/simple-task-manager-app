@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calendar_date_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';
@@ -19,6 +20,7 @@ class MainAppScreen extends ConsumerStatefulWidget {
 }
 
 class _MainAppScreenState extends ConsumerState<MainAppScreen> {
+  DateTime? currentBackPressTime;
   late int currentIndex;
   final List<Widget> pages = [
     HomeScreen(),
@@ -37,223 +39,187 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tasksState = ref.watch(noteViewModelProvider);
-    final allTasks = tasksState.notes;
+    final doubleTapToExit = ref.watch(doubleTapToExitProvider);
 
-    int calculateStreak() {
-      int streak = 0;
-      final now = DateTime.now();
-      for (int i = 0; i <= 3650; i++) {
-        final day = now.subtract(Duration(days: i));
-        final completed = allTasks.where((t) {
-          final target = t.dueDate ?? t.createdAt;
-          return target.year == day.year &&
-              target.month == day.month &&
-              target.day == day.day &&
-              t.isCompleted;
-        }).length;
+    return PopScope(
+      canPop: !doubleTapToExit,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
 
-        if (i == 0 && completed == 0) continue;
-        if (completed > 0) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-      return streak;
-    }
-
-    final currentStreak = calculateStreak();
-
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: currentIndex == 1
-          ? null
-          : PreferredSize(
-              preferredSize: Size(double.infinity, 56),
-              child: AppBar(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
-                          ),
-                        );
-                      },
-                      icon: Row(
-                        children: [
-                          Text(
-                            '$currentStreak 🔥',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Icon(Icons.person),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+        final now = DateTime.now();
+        if (currentBackPressTime == null ||
+            now.difference(currentBackPressTime!) >
+                const Duration(seconds: 2)) {
+          currentBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Press back again to exit',
+                textAlign: TextAlign.center,
+              ),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-      body: SafeArea(child: pages[currentIndex]),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // When on the Calendar tab (index 1), pre-fill the due date with
-          // the currently selected calendar date. Otherwise no pre-fill.
-          final initialDate = currentIndex == 1
-              ? ref.read(selectedCalendarDateProvider)
-              : null;
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            enableDrag: false,
-            backgroundColor: Colors.transparent,
-            builder: (context) {
-              return CreateNoteView(initialDate: initialDate);
-            },
           );
-        },
-        elevation: 8,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32, color: Colors.white),
-      ),
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        extendBody: true,
+        resizeToAvoidBottomInset: false,
+        appBar: currentIndex == 1
+            ? null
+            : PreferredSize(
+                preferredSize: Size(double.infinity, 56),
+                child: AppBar(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.person),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+        body: SafeArea(bottom: false, child: pages[currentIndex]),
 
-      bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-        height: 72,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: Container(
+          height: 64,
+          width: 64,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.4),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                final initialDate = currentIndex == 1
+                    ? ref.read(selectedCalendarDateProvider)
+                    : null;
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  enableDrag: false,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) {
+                    return CreateNoteView(initialDate: initialDate);
+                  },
+                );
+              },
+              customBorder: const CircleBorder(),
+              child: const Icon(
+                Icons.add_rounded,
+                size: 38,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+
+        bottomNavigationBar: MediaQuery.removePadding(
+          context: context,
+          removeBottom: true,
+          child: BottomAppBar(
+            height: 80,
+            padding: EdgeInsets.zero,
+            notchMargin: 12,
+            color: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            shape: const CircularNotchedRectangle(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildTabItem(
+                    index: 0,
+                    icon: CupertinoIcons.house,
+                    activeIcon: CupertinoIcons.house_fill,
+                    label: 'Home',
+                  ),
+                  _buildTabItem(
+                    index: 1,
+                    icon: CupertinoIcons.calendar,
+                    activeIcon: CupertinoIcons.calendar_today,
+                    label: 'Calendar',
+                  ),
+                  const SizedBox(width: 80), // Space for FAB
+                  _buildTabItem(
+                    index: 2,
+                    icon: CupertinoIcons.timer,
+                    activeIcon: CupertinoIcons.timer_fill,
+                    label: 'Focus',
+                  ),
+                  _buildTabItem(
+                    index: 3,
+                    icon: CupertinoIcons.chart_bar,
+                    activeIcon: CupertinoIcons.chart_bar_fill,
+                    label: 'Analytics',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+  }) {
+    final isSelected = currentIndex == index;
+    return Opacity(
+      opacity: isSelected ? 1.0 : 0.5,
+      child: InkWell(
+        onTap: () => _switchTab(index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Opacity(
-              opacity: currentIndex == 0 ? 1.0 : 0.5,
-              child: SizedBox(
-                width: 70,
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () => _switchTab(0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          currentIndex == 0
-                              ? CupertinoIcons.house_fill
-                              : CupertinoIcons.house,
-                          size: 26,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Home',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Opacity(
-              opacity: currentIndex == 1 ? 1.0 : 0.5,
-              child: SizedBox(
-                width: 70,
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () => _switchTab(1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          currentIndex == 1
-                              ? CupertinoIcons.calendar_today
-                              : CupertinoIcons.calendar,
-                          size: 26,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Calendar',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 24.0, width: 24.0),
-            Opacity(
-              opacity: currentIndex == 2 ? 1.0 : 0.5,
-              child: SizedBox(
-                width: 70,
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () => _switchTab(2),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          currentIndex == 2
-                              ? CupertinoIcons.timer_fill
-                              : CupertinoIcons.timer,
-                          size: 26,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Focus',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Opacity(
-              opacity: currentIndex == 3 ? 1.0 : 0.5,
-              child: SizedBox(
-                width: 70,
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () => _switchTab(3),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          currentIndex == 3
-                              ? CupertinoIcons.chart_bar_fill
-                              : CupertinoIcons.chart_bar,
-                          size: 26,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Analytics',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            Icon(isSelected ? activeIcon : icon, size: 26),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

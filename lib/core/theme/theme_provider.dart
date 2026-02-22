@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/AppThemes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -178,6 +179,15 @@ ThemeData buildTheme(
     colorScheme: colorScheme,
     scaffoldBackgroundColor: backgroundColor,
     appBarTheme: AppBarTheme(
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
       centerTitle: true,
       elevation: 0,
       scrolledUnderElevation: 0,

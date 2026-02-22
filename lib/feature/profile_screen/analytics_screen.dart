@@ -26,6 +26,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     final totalCompleted = allTasks.where((t) => t.isCompleted).length;
     final totalPending = totalTasks - totalCompleted;
 
+    final completionRate = totalTasks > 0
+        ? (totalCompleted / totalTasks * 100).round()
+        : 0;
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -104,7 +108,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(child: SizedBox()),
+                Expanded(
+                  child: _StatCard(
+                    title: "Finish Rate",
+                    value: "$completionRate%",
+                    icon: Icons.trending_up_rounded,
+                    color: colorScheme.secondary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 48),

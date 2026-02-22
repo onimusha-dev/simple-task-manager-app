@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,22 @@ import 'package:fuck_your_todos/main_app_screen.dart';
 import 'package:fuck_your_todos/feature/error_screen/global_error_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top],
+  );
+
+  SystemChrome.setSystemUIChangeCallback((bool visible) async {
+    if (visible) {
+      await Future.delayed(const Duration(milliseconds: 2500));
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top],
+      );
+    }
+  });
+
   // Catch Flutter UI errors and substitute the broken widget tree with our error screen
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return GlobalErrorScreen(errorDetails: details);
@@ -44,7 +61,7 @@ class MyApp extends ConsumerWidget {
           theme: buildTheme(lightScheme, Brightness.light, false),
           darkTheme: buildTheme(darkScheme, Brightness.dark, pureDark),
           themeMode: themeMode,
-          home: const Scaffold(body: MainAppScreen()),
+          home: const MainAppScreen(),
         );
       },
     );
