@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fuck_your_todos/core/theme/app_theme.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/main_app_screen.dart';
 
@@ -13,13 +12,15 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
+    final themeMode = ref.watch(themeControllerProvider);
+    final lightTheme = ref.watch(lightThemeProvider);
+    final darkTheme = ref.watch(darkThemeProvider);
 
     return MaterialApp(
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: themeMode,
-      home: Scaffold(body: MainAppScreen()),
+      home: const Scaffold(body: MainAppScreen()),
     );
   }
 }

@@ -43,10 +43,7 @@ class $NoteTableTable extends NoteTable
     'description',
     aliasedName,
     true,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 200,
-    ),
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 200),
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
