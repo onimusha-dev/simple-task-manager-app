@@ -1,10 +1,17 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/main_app_screen.dart';
+import 'package:fuck_your_todos/feature/error_screen/global_error_screen.dart';
 
 void main() {
-  runApp(ProviderScope(child: MyApp()));
+  // Catch Flutter UI errors and substitute the broken widget tree with our error screen
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return GlobalErrorScreen(errorDetails: details);
+  };
+
+  runApp(AppRestarter(child: ProviderScope(child: MyApp())));
 }
 
 class MyApp extends ConsumerWidget {
@@ -13,14 +20,33 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeControllerProvider);
-    final lightTheme = ref.watch(lightThemeProvider);
-    final darkTheme = ref.watch(darkThemeProvider);
+    final preset = ref.watch(themePresetProvider);
+    final pureDark = ref.watch(pureDarkProvider);
 
-    return MaterialApp(
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: themeMode,
-      home: const Scaffold(body: MainAppScreen()),
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        ColorScheme lightScheme;
+        ColorScheme darkScheme;
+
+        if (preset.useDynamic && lightDynamic != null && darkDynamic != null) {
+          lightScheme = lightDynamic;
+          darkScheme = darkDynamic;
+        } else {
+          lightScheme = ColorScheme.fromSeed(seedColor: preset.seedColor);
+
+          darkScheme = ColorScheme.fromSeed(
+            seedColor: preset.seedColor,
+            brightness: Brightness.dark,
+          );
+        }
+
+        return MaterialApp(
+          theme: buildTheme(lightScheme, Brightness.light, false),
+          darkTheme: buildTheme(darkScheme, Brightness.dark, pureDark),
+          themeMode: themeMode,
+          home: const Scaffold(body: MainAppScreen()),
+        );
+      },
     );
   }
 }

@@ -21,9 +21,9 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
   final List<Widget> pages = [
     HomeScreen(),
     CalendarScreen(),
-    // FocusScreen(),
-    Placeholder(),
-    ProfileScreen(),
+    // // FocusScreen(),
+    // Placeholder(),
+    // ProfileScreen(),
   ];
 
   @override

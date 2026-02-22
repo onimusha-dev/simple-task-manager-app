@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/utils/date_formatter.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/account_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/appearance_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/about_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -29,51 +32,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     todayCompletedTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
-      appBar: AppBar(title: Text('Settings')),
-      body: Column(
-        children: [
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.palette_outlined,
-            title: 'Appearance',
-            subtitle: 'Change the look and feel of the app',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AppearanceScreen(),
-                ),
-              );
-            },
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.notifications_none_rounded,
-            title: 'Notifications',
-            subtitle: 'Manage your notification preferences',
-            onTap: () {},
-          ),
-          _buildSettingsTile(
-            context: context,
-            icon: Icons.info_outline,
-            title: 'Others',
-            subtitle: 'Version 1.0.0',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Version 1.0.0',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
+      appBar: AppBar(title: const Text('Settings')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: [
+              _buildSettingsTile(
+                context: context,
+                icon: Icons.palette_outlined,
+                title: 'Appearance',
+                subtitle: 'Theme, Language',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AppearanceScreen(),
                     ),
-                  ),
-                  duration: Duration(seconds: 3),
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                ),
-              );
-            },
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                context: context,
+                icon: Icons.shield_outlined,
+                title: 'Data & Privacy',
+                subtitle: 'Backup, App Lock',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DataAndPrivacyScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                context: context,
+                icon: Icons.account_circle_outlined,
+                title: 'Account',
+                subtitle: 'Cloud sync, Online data, Premium',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AccountScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                context: context,
+                icon: Icons.info_outline,
+                title: 'About',
+                subtitle: 'Version updates, Source Code, Telegram',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 100),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -86,9 +110,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
       onTap: onTap,
     );
   }

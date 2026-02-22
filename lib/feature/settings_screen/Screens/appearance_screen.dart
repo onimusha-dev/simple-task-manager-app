@@ -1,71 +1,159 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/core/theme/AppThemes.dart';
 
-/// 🎨 Appearance settings screen
-/// Japanese hint:
-/// 外観 (がいかん / gaikan) = appearance
 class AppearanceScreen extends ConsumerWidget {
   const AppearanceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🔹 Watch providers once (avoid repetition)
     final themeMode = ref.watch(themeControllerProvider);
     final currentPreset = ref.watch(themePresetProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-
-            /// =======================
-            /// 🎨 Color Scheme Header
-            /// =======================
-            Text(
-              'Color Schemes',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// =======================
-            /// 🎨 Preset Horizontal List
-            /// =======================
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: Row(
-                children: AppThemes.presets.map((preset) {
-                  final isSelected = currentPreset.name == preset.name;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _ThemePreviewCard(
-                      preset: preset,
-                      isSelected: isSelected,
-                    ),
-                  );
-                }).toList(),
+      appBar: AppBar(title: const Text('Appearance')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'COLOR SCHEMES',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                    letterSpacing: 1.2,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: AppThemes.presets.map((preset) {
+                    final isSelected = currentPreset.name == preset.name;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: _ThemePreviewCard(
+                        preset: preset,
+                        isSelected: isSelected,
+                        pureDark: ref.watch(pureDarkProvider),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 32),
+              _ThemeModeSelector(themeMode: themeMode, colorScheme: cs),
+              const _PureDarkToggle(),
+              const _LanguageSelector(),
+              const _DoubleTapExitToggle(),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-            const SizedBox(height: 20),
+class _LanguageSelector extends StatelessWidget {
+  const _LanguageSelector();
 
-            /// =======================
-            /// 🌗 Theme Mode Selector
-            /// =======================
-            _ThemeModeSelector(themeMode: themeMode, colorScheme: cs),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Language',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        'Change system language for app',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: const Icon(Icons.language_rounded),
+      onTap: () {
+        AppSettings.openAppSettings(type: AppSettingsType.settings);
+      },
+    );
+  }
+}
+
+class _DoubleTapExitToggle extends ConsumerWidget {
+  const _DoubleTapExitToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final doubleTap = ref.watch(doubleTapToExitProvider);
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Double Tap to Exit',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        'Press twice on home screen to exit',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Switch(
+        value: doubleTap,
+        onChanged: (value) {
+          ref.read(doubleTapToExitProvider.notifier).toggle();
+        },
+      ),
+    );
+  }
+}
+
+class _PureDarkToggle extends ConsumerWidget {
+  const _PureDarkToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pureDark = ref.watch(pureDarkProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Opacity(
+      opacity: isDark ? 1.0 : 0.5,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        title: Text(
+          'Pure Dark',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          'Uses less power on AMOLED screens',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        trailing: Switch(
+          value: pureDark,
+          onChanged: isDark
+              ? (value) {
+                  ref.read(pureDarkProvider.notifier).toggle();
+                }
+              : null,
         ),
       ),
     );
@@ -83,43 +171,44 @@ class _ThemeModeSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Theme',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          PopupMenuButton<ThemeMode>(
-            initialValue: themeMode,
-            onSelected: (mode) {
-              ref.read(themeControllerProvider.notifier).setTheme(mode);
-            },
-            offset: const Offset(0, 48),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            color: colorScheme.surfaceContainerHighest,
-            itemBuilder: (context) => [
-              _buildThemeItem(context, ThemeMode.system, 'System', themeMode),
-              _buildThemeItem(context, ThemeMode.light, 'Light', themeMode),
-              _buildThemeItem(context, ThemeMode.dark, 'Dark', themeMode),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  _themeModeLabel(themeMode),
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-          ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Theme Mode',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        _themeModeLabel(themeMode),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: PopupMenuButton<ThemeMode>(
+        initialValue: themeMode,
+        onSelected: (mode) {
+          ref.read(themeControllerProvider.notifier).setTheme(mode);
+        },
+        offset: const Offset(0, 48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: colorScheme.surfaceContainerHighest,
+        itemBuilder: (context) => [
+          _buildThemeItem(context, ThemeMode.system, 'System', themeMode),
+          _buildThemeItem(context, ThemeMode.light, 'Light', themeMode),
+          _buildThemeItem(context, ThemeMode.dark, 'Dark', themeMode),
         ],
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
@@ -153,7 +242,7 @@ class _ThemeModeSelector extends ConsumerWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: cs.onSurface,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
               ),
@@ -170,16 +259,24 @@ class _ThemeModeSelector extends ConsumerWidget {
 class _ThemePreviewCard extends ConsumerWidget {
   final AppThemePreset preset;
   final bool isSelected;
+  final bool pureDark;
 
-  const _ThemePreviewCard({required this.preset, required this.isSelected});
+  const _ThemePreviewCard({
+    required this.preset,
+    required this.isSelected,
+    required this.pureDark,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 🎨 Generate preview scheme
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final previewCs = ColorScheme.fromSeed(
       seedColor: preset.seedColor,
       brightness: Theme.of(context).brightness,
     );
+
+    final cardBg = isDark && pureDark ? Colors.black : previewCs.surface;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +292,7 @@ class _ThemePreviewCard extends ConsumerWidget {
             width: 130,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: previewCs.surface,
+              color: cardBg,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
