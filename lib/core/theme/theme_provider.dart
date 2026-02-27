@@ -4,140 +4,91 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/app_themes.dart';
 import 'package:fuck_your_todos/core/services/app_preferences.dart';
 
-// Theme Mode Controller
-final themeControllerProvider = NotifierProvider<ThemeController, ThemeMode>(
+// Theme State
+class ThemeState {
+  final ThemeMode themeMode;
+  final AppThemePreset preset;
+  final bool pureDark;
+
+  const ThemeState({
+    required this.themeMode,
+    required this.preset,
+    required this.pureDark,
+  });
+
+  ThemeState copyWith({
+    ThemeMode? themeMode,
+    AppThemePreset? preset,
+    bool? pureDark,
+  }) {
+    return ThemeState(
+      themeMode: themeMode ?? this.themeMode,
+      preset: preset ?? this.preset,
+      pureDark: pureDark ?? this.pureDark,
+    );
+  }
+}
+
+// Theme Provider
+final themeProvider = NotifierProvider<ThemeController, ThemeState>(
   () => ThemeController(),
 );
 
-class ThemeController extends Notifier<ThemeMode> {
+class ThemeController extends Notifier<ThemeState> {
   @override
-  ThemeMode build() {
-    _loadTheme();
-    return ThemeMode.system;
+  ThemeState build() {
+    return _loadState();
   }
 
-  Future<void> _loadTheme() async {
-    final theme = AppPreferences.getString(AppPreferences.keyTheme);
+  ThemeState _loadState() {
+    final themeStr = AppPreferences.getPreference(AppPreferences.keyTheme);
+    final presetStr = AppPreferences.getPreference(
+      AppPreferences.keyThemePreset,
+    );
+    final pureDark =
+        AppPreferences.getPreferenceBool(AppPreferences.keyPureDark) ?? false;
 
-    state = switch (theme) {
+    final themeMode = switch (themeStr) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
       _ => ThemeMode.system,
     };
+
+    final preset = AppThemes.presets.firstWhere(
+      (p) => p.name == presetStr,
+      orElse: () => AppThemes.catppuccin,
+    );
+
+    return ThemeState(themeMode: themeMode, preset: preset, pureDark: pureDark);
   }
 
-  Future<void> setTheme(ThemeMode mode) async {
-    state = mode;
-
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = state.copyWith(themeMode: mode);
     final value = switch (mode) {
       ThemeMode.light => 'light',
       ThemeMode.dark => 'dark',
       ThemeMode.system => 'system',
     };
-
-    await AppPreferences.setString(AppPreferences.keyTheme, value);
-  }
-}
-
-// Theme Preset Provider
-final themePresetProvider =
-    NotifierProvider<ThemePresetController, AppThemePreset>(
-      () => ThemePresetController(),
-    );
-
-class ThemePresetController extends Notifier<AppThemePreset> {
-  @override
-  AppThemePreset build() {
-    _load();
-    return AppThemes.catppuccin;
-  }
-
-  Future<void> _load() async {
-    final saved = AppPreferences.getString(AppPreferences.keyThemePreset);
-
-    if (saved != null) {
-      final preset = AppThemes.presets.firstWhere(
-        (p) => p.name == saved,
-        orElse: () => AppThemes.catppuccin,
-      );
-      state = preset;
-    }
+    await AppPreferences.setPreference(AppPreferences.keyTheme, value);
   }
 
   Future<void> setPreset(AppThemePreset preset) async {
-    state = preset;
-    await AppPreferences.setString(AppPreferences.keyThemePreset, preset.name);
-  }
-}
-
-// Pure Dark Provider
-final pureDarkProvider = NotifierProvider<PureDarkController, bool>(
-  () => PureDarkController(),
-);
-
-class PureDarkController extends Notifier<bool> {
-  @override
-  bool build() {
-    _load();
-    return false;
-  }
-
-  Future<void> _load() async {
-    state = AppPreferences.getBool(AppPreferences.keyPureDark) ?? false;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    await AppPreferences.setBool(AppPreferences.keyPureDark, state);
-  }
-}
-
-// Double Tap To Exit Provider
-final doubleTapToExitProvider =
-    NotifierProvider<DoubleTapToExitController, bool>(
-      () => DoubleTapToExitController(),
+    state = state.copyWith(preset: preset);
+    await AppPreferences.setPreference(
+      AppPreferences.keyThemePreset,
+      preset.name,
     );
-
-class DoubleTapToExitController extends Notifier<bool> {
-  @override
-  bool build() {
-    _load();
-    return false;
   }
 
-  Future<void> _load() async {
-    state = AppPreferences.getBool(AppPreferences.keyDoubleTapToExit) ?? false;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    await AppPreferences.setBool(AppPreferences.keyDoubleTapToExit, state);
+  Future<void> togglePureDark() async {
+    final pureDark = !state.pureDark;
+    state = state.copyWith(pureDark: pureDark);
+    await AppPreferences.setPreferenceBool(
+      AppPreferences.keyPureDark,
+      pureDark,
+    );
   }
 }
-
-// Dynamic Theme Providers
-
-final lightThemeProvider = Provider<ThemeData>((ref) {
-  final preset = ref.watch(themePresetProvider);
-  return buildTheme(
-    ColorScheme.fromSeed(seedColor: preset.seedColor),
-    Brightness.light,
-    false, // light theme never uses pure dark
-  );
-});
-
-final darkThemeProvider = Provider<ThemeData>((ref) {
-  final preset = ref.watch(themePresetProvider);
-  final pureDark = ref.watch(pureDarkProvider);
-  return buildTheme(
-    ColorScheme.fromSeed(
-      seedColor: preset.seedColor,
-      brightness: Brightness.dark,
-    ),
-    Brightness.dark,
-    pureDark,
-  );
-});
 
 ThemeData buildTheme(
   ColorScheme colorScheme,
@@ -146,7 +97,7 @@ ThemeData buildTheme(
 ) {
   final isDark = brightness == Brightness.dark;
 
-  // 🎨 Calculate Background Color (Subtle tint of primary)
+  // NOTE: Calculate Background Color (Subtle tint of primary)
   // For light: very faint tint
   // For dark: deep dark tint, unless pureDark is true
   Color backgroundColor;
@@ -207,4 +158,32 @@ ThemeData buildTheme(
       ),
     ),
   );
+}
+
+// Double Tap To Exit Provider
+final doubleTapToExitProvider =
+    NotifierProvider<DoubleTapToExitController, bool>(
+      () => DoubleTapToExitController(),
+    );
+
+class DoubleTapToExitController extends Notifier<bool> {
+  @override
+  bool build() {
+    _load();
+    return false;
+  }
+
+  Future<void> _load() async {
+    state =
+        AppPreferences.getPreferenceBool(AppPreferences.keyDoubleTapToExit) ??
+        false;
+  }
+
+  Future<void> toggle() async {
+    state = !state;
+    await AppPreferences.setPreferenceBool(
+      AppPreferences.keyDoubleTapToExit,
+      state,
+    );
+  }
 }

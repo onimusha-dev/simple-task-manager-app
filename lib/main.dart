@@ -39,9 +39,10 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeControllerProvider);
-    final preset = ref.watch(themePresetProvider);
-    final pureDark = ref.watch(pureDarkProvider);
+    final themeState = ref.watch(themeProvider);
+    final themeMode = themeState.themeMode;
+    final preset = themeState.preset;
+    final pureDark = themeState.pureDark;
 
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {

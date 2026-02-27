@@ -36,10 +36,10 @@ class _AppProtectorState extends State<AppProtector>
   void _checkProtection() {
     setState(() {
       _isLocallyProtected =
-          AppPreferences.getBool(AppPreferences.keyAppProtectionEnabled) ??
+          AppPreferences.getPreferenceBool(AppPreferences.keyAppProtectionEnabled) ??
           false;
       _protectionType =
-          AppPreferences.getString(AppPreferences.keyAppProtectionType) ??
+          AppPreferences.getPreference(AppPreferences.keyAppProtectionType) ??
           'biometrics';
       if (!_isLocallyProtected) {
         _isAuthenticated = true;

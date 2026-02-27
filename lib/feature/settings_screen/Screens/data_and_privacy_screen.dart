@@ -26,9 +26,9 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
   void initState() {
     super.initState();
     _protectApp =
-        AppPreferences.getBool(AppPreferences.keyAppProtectionEnabled) ?? false;
+        AppPreferences.getPreferenceBool(AppPreferences.keyAppProtectionEnabled) ?? false;
     _protectionType =
-        AppPreferences.getString(AppPreferences.keyAppProtectionType) ??
+        AppPreferences.getPreference(AppPreferences.keyAppProtectionType) ??
         'biometrics';
     _calculateDbSize();
   }
@@ -251,7 +251,7 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                   value: _protectApp,
                   onChanged: (value) async {
                     if (value && _protectionType == 'pin') {
-                      await AppPreferences.setBool(
+                      await AppPreferences.setPreferenceBool(
                         AppPreferences.keyAppProtectionEnabled,
                         value,
                       );
@@ -263,7 +263,7 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                     setState(() {
                       _protectApp = value;
                     });
-                    await AppPreferences.setBool(
+                    await AppPreferences.setPreferenceBool(
                       AppPreferences.keyAppProtectionEnabled,
                       value,
                     );
@@ -307,7 +307,7 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                                 isSettingPin: true,
                                 onSuccess: () async {
                                   Navigator.pop(context);
-                                  await AppPreferences.setString(
+                                  await AppPreferences.setPreference(
                                     AppPreferences.keyAppProtectionType,
                                     val,
                                   );
@@ -322,7 +322,7 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                             ),
                           );
                         } else {
-                          AppPreferences.setString(
+                          AppPreferences.setPreference(
                             AppPreferences.keyAppProtectionType,
                             val,
                           );

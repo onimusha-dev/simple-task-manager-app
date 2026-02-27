@@ -27,11 +27,11 @@ class AppPreferences {
   static const String keyBackupLocation = 'backup_location';
 
   // Helper methods
-  static String? getString(String key) => instance.getString(key);
-  static Future<bool> setString(String key, String value) =>
+  static String? getPreference(String key) => instance.getString(key);
+  static Future<bool> setPreference(String key, String value) =>
       instance.setString(key, value);
-  static bool? getBool(String key) => instance.getBool(key);
-  static Future<bool> setBool(String key, bool value) =>
+  static bool? getPreferenceBool(String key) => instance.getBool(key);
+  static Future<bool> setPreferenceBool(String key, bool value) =>
       instance.setBool(key, value);
 
   static String exportToJson() {
@@ -46,19 +46,24 @@ class AppPreferences {
     try {
       final Map<String, dynamic> prefsMap = jsonDecode(jsonString);
       for (var entry in prefsMap.entries) {
-        if (entry.value is bool) {
-          await instance.setBool(entry.key, entry.value as bool);
-        } else if (entry.value is String) {
-          await instance.setString(entry.key, entry.value as String);
-        } else if (entry.value is int) {
-          await instance.setInt(entry.key, entry.value as int);
-        } else if (entry.value is double) {
-          await instance.setDouble(entry.key, entry.value as double);
-        } else if (entry.value is List) {
-          await instance.setStringList(
-            entry.key,
-            (entry.value as List).cast<String>(),
-          );
+        switch (entry.value) {
+          case bool value:
+            await instance.setBool(entry.key, value);
+            break;
+          case String value:
+            await instance.setString(entry.key, value);
+            break;
+          case int value:
+            await instance.setInt(entry.key, value);
+            break;
+          case double value:
+            await instance.setDouble(entry.key, value);
+            break;
+          case List value:
+            await instance.setStringList(entry.key, value.cast<String>());
+            break;
+          default:
+            break;
         }
       }
     } catch (e) {

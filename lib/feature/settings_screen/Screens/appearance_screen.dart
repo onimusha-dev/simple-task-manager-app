@@ -9,8 +9,9 @@ class AppearanceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeControllerProvider);
-    final currentPreset = ref.watch(themePresetProvider);
+    final themeState = ref.watch(themeProvider);
+    final themeMode = themeState.themeMode;
+    final currentPreset = themeState.preset;
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -45,7 +46,7 @@ class AppearanceScreen extends ConsumerWidget {
                       child: _ThemePreviewCard(
                         preset: preset,
                         isSelected: isSelected,
-                        pureDark: ref.watch(pureDarkProvider),
+                        pureDark: themeState.pureDark,
                       ),
                     );
                   }).toList(),
@@ -128,7 +129,7 @@ class _PureDarkToggle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pureDark = ref.watch(pureDarkProvider);
+    final pureDark = ref.watch(themeProvider).pureDark;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Opacity(
@@ -151,7 +152,7 @@ class _PureDarkToggle extends ConsumerWidget {
           value: pureDark,
           onChanged: isDark
               ? (value) {
-                  ref.read(pureDarkProvider.notifier).toggle();
+                  ref.read(themeProvider.notifier).togglePureDark();
                 }
               : null,
         ),
@@ -188,7 +189,7 @@ class _ThemeModeSelector extends ConsumerWidget {
       trailing: PopupMenuButton<ThemeMode>(
         initialValue: themeMode,
         onSelected: (mode) {
-          ref.read(themeControllerProvider.notifier).setTheme(mode);
+          ref.read(themeProvider.notifier).setThemeMode(mode);
         },
         offset: const Offset(0, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -283,7 +284,7 @@ class _ThemePreviewCard extends ConsumerWidget {
       children: [
         InkWell(
           onTap: () {
-            ref.read(themePresetProvider.notifier).setPreset(preset);
+            ref.read(themeProvider.notifier).setPreset(preset);
           },
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
