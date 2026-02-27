@@ -23,12 +23,12 @@ class NoteDaoManager {
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(noteDaoProvider)
-const noteDaoProviderProvider = NoteDaoProviderProvider._();
+final noteDaoProviderProvider = NoteDaoProviderProvider._();
 
 final class NoteDaoProviderProvider
     extends $FunctionalProvider<NoteDao, NoteDao, NoteDao>
     with $Provider<NoteDao> {
-  const NoteDaoProviderProvider._()
+  NoteDaoProviderProvider._()
     : super(
         from: null,
         argument: null,

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 import 'package:fuck_your_todos/domain/models/note_model.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/data/db/app_database.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/task_category_view_model.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/task_priority_widget.dart';
 
@@ -16,6 +18,7 @@ class TaskCard extends ConsumerWidget {
     required this.priority,
     required this.tags,
     required this.isCompleted,
+    this.taskType,
   });
 
   final int id;
@@ -25,6 +28,22 @@ class TaskCard extends ConsumerWidget {
   final bool isCompleted;
   final Priority priority;
   final List<String> tags;
+  final int? taskType;
+
+  String _getCategoryIcon(WidgetRef ref) {
+    if (taskType == null) return '';
+    final categoriesState = ref.watch(taskCategoryViewModelProvider);
+    return categoriesState.maybeWhen(
+      data: (cats) {
+        final match = cats.cast<TaskCategoriesTableData?>().firstWhere(
+          (c) => c?.id == taskType,
+          orElse: () => null,
+        );
+        return match?.icon ?? '';
+      },
+      orElse: () => '',
+    );
+  }
 
   // this function is used to show the task options
   void _showTaskOptions(BuildContext context, WidgetRef ref) {
@@ -60,9 +79,25 @@ class TaskCard extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(10),
                       color: Theme.of(context).colorScheme.primaryContainer,
                     ),
-                    child: Icon(
-                      Icons.collections,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    child: Builder(
+                      builder: (context) {
+                        final iconStr = _getCategoryIcon(ref);
+                        if (iconStr.isNotEmpty) {
+                          return Center(
+                            child: Text(
+                              iconStr,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          );
+                        } else {
+                          return Icon(
+                            Icons.more_horiz_rounded,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
+                          );
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -225,10 +260,24 @@ class TaskCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                   color: Theme.of(context).colorScheme.primaryContainer,
                 ),
-                child: Icon(
-                  Icons.collections,
-                  size: 32,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                child: Builder(
+                  builder: (context) {
+                    final iconStr = _getCategoryIcon(ref);
+                    if (iconStr.isNotEmpty) {
+                      return Center(
+                        child: Text(
+                          iconStr,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      );
+                    } else {
+                      return Icon(
+                        Icons.more_horiz_rounded,
+                        size: 32,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      );
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 16),

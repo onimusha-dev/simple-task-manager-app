@@ -19,16 +19,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tasksState = ref.watch(noteViewModelProvider);
 
     final todayTasks = tasksState.notes
-        .where((t) => isToday(t.createdAt) && !t.isCompleted)
+        .where((t) => isToday(t.dueDate ?? t.createdAt) && !t.isCompleted)
         .toList();
 
-    todayTasks.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    todayTasks.sort(
+      (a, b) => (a.dueDate ?? a.createdAt).compareTo(b.dueDate ?? b.createdAt),
+    );
 
     final todayCompletedTasks = tasksState.notes
-        .where((t) => isToday(t.createdAt) && t.isCompleted)
+        .where((t) => isToday(t.dueDate ?? t.createdAt) && t.isCompleted)
         .toList();
 
-    todayCompletedTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    todayCompletedTasks.sort(
+      (a, b) => (b.dueDate ?? b.createdAt).compareTo(a.dueDate ?? a.createdAt),
+    );
 
     if (todayTasks.isEmpty && todayCompletedTasks.isEmpty) {
       return const NoTaskPlaceholder();
@@ -46,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ListView.builder(
-        padding: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.only(top: 12, bottom: 100),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           // ───────────────── Today header ─────────────────
@@ -215,10 +219,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               id: task.id,
               title: task.title,
               description: task.description ?? '',
-              dueTime: task.createdAt,
+              dueTime: task.dueDate ?? task.createdAt,
               priority: task.priority,
               tags: [],
               isCompleted: task.isCompleted,
+              taskType: task.taskType,
             );
           }
 
@@ -250,10 +255,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             id: completedTask.id,
             title: completedTask.title,
             description: completedTask.description ?? '',
-            dueTime: completedTask.createdAt,
+            dueTime: completedTask.dueDate ?? completedTask.createdAt,
             priority: completedTask.priority,
             tags: [],
             isCompleted: completedTask.isCompleted,
+            taskType: completedTask.taskType,
           );
         },
       ),

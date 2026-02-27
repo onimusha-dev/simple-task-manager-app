@@ -12,4 +12,5 @@ class NoteTable extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get priority =>
       intEnum<Priority>().withDefault(const Constant(0))();
+  IntColumn get taskType => integer().nullable()();
 }

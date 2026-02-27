@@ -64,6 +64,26 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
   }
 
   @override
+  void didUpdateWidget(covariant WeekCarouselWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isSameDay(widget.selectedDate, oldWidget.selectedDate)) {
+      final oldWeekStart = _getWeekStart(oldWidget.selectedDate);
+      final newWeekStart = _getWeekStart(widget.selectedDate);
+      if (!_isSameDay(oldWeekStart, newWeekStart)) {
+        // Find how many weeks difference from _initialWeekStart to jump
+        final diff = newWeekStart.difference(_initialWeekStart).inDays ~/ 7;
+        final newIndex = 100 + diff;
+        if (newIndex != _currentPageIndex) {
+          _currentPageIndex = newIndex;
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(newIndex);
+          }
+        }
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -87,6 +107,11 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
   /// Get current displayed week start based on page index
   DateTime _getCurrentWeekStart() {
     return _getWeekFromOffset(_currentPageIndex);
+  }
+
+  /// Get middle of current displayed week (Wednesday) to determine the logical month
+  DateTime _getCurrentMiddleOfWeek() {
+    return _getCurrentWeekStart().add(const Duration(days: 3));
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
@@ -150,7 +175,7 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
   }
 
   Widget _buildHeader() {
-    final currentWeekStart = _getCurrentWeekStart();
+    final currentWeekMiddle = _getCurrentMiddleOfWeek();
     final monthNames = [
       'JANUARY',
       'FEBRUARY',
@@ -183,7 +208,7 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
           Column(
             children: [
               Text(
-                monthNames[currentWeekStart.month - 1],
+                monthNames[currentWeekMiddle.month - 1],
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.5,
@@ -191,7 +216,7 @@ class _WeekCarouselWidgetState extends ConsumerState<WeekCarouselWidget> {
                 ),
               ),
               Text(
-                '${currentWeekStart.year}',
+                '${currentWeekMiddle.year}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),

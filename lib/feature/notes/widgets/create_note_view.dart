@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/data/db/tables/note_table.dart';
+import 'package:fuck_your_todos/data/db/app_database.dart';
 import 'package:fuck_your_todos/domain/models/note_model.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
+import 'package:fuck_your_todos/feature/notes/view_models/task_category_view_model.dart';
 
 /// Bottom-sheet widget for creating or editing a note.
 ///
@@ -32,9 +34,11 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
   late final TextEditingController _descriptionController;
   DateTime? _selectedDateTime;
   Priority _selectedPriority = Priority.none;
+  int? _selectedTaskType;
 
   // Key lets us programmatically open the priority popup
   final _priorityMenuKey = GlobalKey<PopupMenuButtonState<Priority>>();
+  final _categoryMenuKey = GlobalKey<PopupMenuButtonState<int>>();
 
   bool get _isEditMode => widget.noteToEdit != null;
 
@@ -58,6 +62,7 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
     // Create mode: use initialDate (from calendar) if provided, else null.
     _selectedDateTime = note?.dueDate ?? widget.initialDate;
     _selectedPriority = note?.priority ?? Priority.none;
+    _selectedTaskType = note?.taskType;
   }
 
   void _onTitleChanged() => setState(() {});
@@ -181,12 +186,19 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
           title != note.title ||
           description != (note.description ?? '') ||
           !isSameDt(_selectedDateTime, note.dueDate) ||
-          _selectedPriority != note.priority;
+          _selectedPriority != note.priority ||
+          _selectedTaskType != note.taskType;
 
       if (hasChanges) {
         await ref
             .read(noteViewModelProvider.notifier)
-            .updateNote(note.id, title, description, dueDateStr);
+            .updateNote(
+              note.id,
+              title,
+              description,
+              dueDateStr,
+              _selectedTaskType,
+            );
 
         // Update priority separately if changed
         if (_selectedPriority != note.priority) {
@@ -198,7 +210,13 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
     } else {
       await ref
           .read(noteViewModelProvider.notifier)
-          .insertNote(title, description, dueDateStr, _selectedPriority);
+          .insertNote(
+            title,
+            description,
+            dueDateStr,
+            _selectedPriority,
+            _selectedTaskType,
+          );
     }
 
     if (mounted) Navigator.pop(context);
@@ -361,6 +379,114 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
                     }
                   },
                 ),
+              ),
+
+              // Category chip
+              Consumer(
+                builder: (context, ref, child) {
+                  final categoriesAsync = ref.watch(
+                    taskCategoryViewModelProvider,
+                  );
+                  return categoriesAsync.maybeWhen(
+                    data: (categories) {
+                      if (categories.isEmpty) return const SizedBox.shrink();
+
+                      final selectedCategory = categories
+                          .cast<TaskCategoriesTableData?>()
+                          .firstWhere(
+                            (c) => c?.id == _selectedTaskType,
+                            orElse: () => null,
+                          );
+
+                      return PopupMenuButton<int>(
+                        key: _categoryMenuKey,
+                        onSelected: (id) {
+                          if (id == -1) {
+                            // Trigger 'Add Category' flow
+                            _showAddCategoryInline(context, ref);
+                          } else {
+                            setState(() => _selectedTaskType = id);
+                          }
+                        },
+                        offset: const Offset(0, -120),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        color: cs.surfaceContainerHighest,
+                        itemBuilder: (_) => [
+                          ...categories.map((c) {
+                            final isSelected = _selectedTaskType == c.id;
+                            return PopupMenuItem<int>(
+                              value: c.id,
+                              child: Row(
+                                children: [
+                                  Text(c.icon),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      c.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: cs.onSurface,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: cs.primary,
+                                    ),
+                                ],
+                              ),
+                            );
+                          }),
+                          const PopupMenuDivider(),
+                          PopupMenuItem<int>(
+                            value:
+                                -1, // Use -1 as a special value to trigger 'Add Category'
+                            child: Row(
+                              children: [
+                                Icon(Icons.add_rounded, color: cs.primary),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Add new category',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: cs.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        child: _NoteChip(
+                          icon: Icons.category_rounded,
+                          label: selectedCategory == null
+                              ? 'Category'
+                              : selectedCategory.name,
+                          color: selectedCategory == null
+                              ? cs.outline
+                              : cs.primary,
+                          onTap: () {
+                            if (_selectedTaskType != null) {
+                              setState(() => _selectedTaskType = null);
+                            } else {
+                              _categoryMenuKey.currentState?.showButtonMenu();
+                            }
+                          },
+                        ),
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  );
+                },
               ),
             ],
           ),
@@ -543,6 +669,151 @@ class _NoteChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─── Inline Add Category Dialog ─────────────────────────────────────────────
+
+void _showAddCategoryInline(BuildContext context, WidgetRef ref) {
+  showDialog(
+    context: context,
+    builder: (context) => const _AddCategoryInlineDialog(),
+  );
+}
+
+class _AddCategoryInlineDialog extends ConsumerStatefulWidget {
+  const _AddCategoryInlineDialog();
+
+  @override
+  ConsumerState<_AddCategoryInlineDialog> createState() =>
+      _AddCategoryInlineDialogState();
+}
+
+class _AddCategoryInlineDialogState
+    extends ConsumerState<_AddCategoryInlineDialog> {
+  final _nameController = TextEditingController();
+  String _selectedEmoji = '📝'; // Default simple emoji
+  bool _showEmojiPicker = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Category'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showEmojiPicker = !_showEmojiPicker;
+                    });
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      _selectedEmoji,
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Category Name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_showEmojiPicker) ...[
+              const SizedBox(height: 16),
+              // Very basic static emoji list to avoid heavy EmojiPicker dependencies inline inside bottomsheet.
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children:
+                    [
+                          '📝',
+                          '💼',
+                          '🛒',
+                          '🏠',
+                          '❤️',
+                          '💡',
+                          '🔥',
+                          '📚',
+                          '⚽',
+                          '✈️',
+                          '🎮',
+                          '🍔',
+                        ]
+                        .map(
+                          (emoji) => InkWell(
+                            onTap: () {
+                              setState(() {
+                                _selectedEmoji = emoji;
+                                _showEmojiPicker = false;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            final name = _nameController.text.trim();
+            if (name.isNotEmpty) {
+              ref
+                  .read(taskCategoryViewModelProvider.notifier)
+                  .addCategory(name, _selectedEmoji);
+              Navigator.pop(context);
+            }
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }

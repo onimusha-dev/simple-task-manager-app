@@ -47,6 +47,7 @@ class NoteRepository {
     String? description,
     String? dueDate,
     Priority? priority,
+    int? taskType,
   ) async {
     try {
       final note = NoteTableCompanion(
@@ -58,6 +59,7 @@ class NoteRepository {
             ? Value(DateTime.parse(dueDate))
             : const Value.absent(),
         priority: priority != null ? Value(priority) : const Value.absent(),
+        taskType: taskType != null ? Value(taskType) : const Value.absent(),
         createdAt: Value(DateTime.now()),
         updatedAt: Value(DateTime.now()),
       );
@@ -84,9 +86,13 @@ class NoteRepository {
     String? title,
     String? description,
     String? dueDate,
+    int? taskType,
   ) async {
     try {
-      if (title == null && description == null && dueDate == null) {
+      if (title == null &&
+          description == null &&
+          dueDate == null &&
+          taskType == null) {
         throw Exception('No fields to update');
       }
       final note = NoteTableCompanion(
@@ -100,6 +106,7 @@ class NoteRepository {
         dueDate: dueDate != null
             ? Value(DateTime.parse(dueDate))
             : const Value.absent(),
+        taskType: taskType != null ? Value(taskType) : const Value.absent(),
         updatedAt: Value(DateTime.now()),
       );
       final noteId = await noteDao.updateNote(note);

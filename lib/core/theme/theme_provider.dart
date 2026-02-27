@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fuck_your_todos/core/theme/AppThemes.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fuck_your_todos/core/theme/app_themes.dart';
+import 'package:fuck_your_todos/core/services/app_preferences.dart';
 
 // Theme Mode Controller
 final themeControllerProvider = NotifierProvider<ThemeController, ThemeMode>(
@@ -17,8 +17,7 @@ class ThemeController extends Notifier<ThemeMode> {
   }
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final theme = prefs.getString('theme');
+    final theme = AppPreferences.getString(AppPreferences.keyTheme);
 
     state = switch (theme) {
       'light' => ThemeMode.light,
@@ -30,15 +29,13 @@ class ThemeController extends Notifier<ThemeMode> {
   Future<void> setTheme(ThemeMode mode) async {
     state = mode;
 
-    final prefs = await SharedPreferences.getInstance();
-
     final value = switch (mode) {
       ThemeMode.light => 'light',
       ThemeMode.dark => 'dark',
       ThemeMode.system => 'system',
     };
 
-    await prefs.setString('theme', value);
+    await AppPreferences.setString(AppPreferences.keyTheme, value);
   }
 }
 
@@ -56,8 +53,7 @@ class ThemePresetController extends Notifier<AppThemePreset> {
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('theme_preset');
+    final saved = AppPreferences.getString(AppPreferences.keyThemePreset);
 
     if (saved != null) {
       final preset = AppThemes.presets.firstWhere(
@@ -70,8 +66,7 @@ class ThemePresetController extends Notifier<AppThemePreset> {
 
   Future<void> setPreset(AppThemePreset preset) async {
     state = preset;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_preset', preset.name);
+    await AppPreferences.setString(AppPreferences.keyThemePreset, preset.name);
   }
 }
 
@@ -88,14 +83,12 @@ class PureDarkController extends Notifier<bool> {
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool('pure_dark') ?? false;
+    state = AppPreferences.getBool(AppPreferences.keyPureDark) ?? false;
   }
 
   Future<void> toggle() async {
     state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pure_dark', state);
+    await AppPreferences.setBool(AppPreferences.keyPureDark, state);
   }
 }
 
@@ -113,14 +106,12 @@ class DoubleTapToExitController extends Notifier<bool> {
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool('double_tap_to_exit') ?? false;
+    state = AppPreferences.getBool(AppPreferences.keyDoubleTapToExit) ?? false;
   }
 
   Future<void> toggle() async {
     state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('double_tap_to_exit', state);
+    await AppPreferences.setBool(AppPreferences.keyDoubleTapToExit, state);
   }
 }
 

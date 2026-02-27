@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuck_your_todos/core/constants/constants.dart';
 import 'package:fuck_your_todos/core/utils/date_formatter.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/account_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/appearance_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/categories_screen/categories_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/about_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -56,12 +58,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 context: context,
                 icon: Icons.shield_outlined,
                 title: 'Data & Privacy',
-                subtitle: 'Backup, App Lock',
+                subtitle: 'Protect the app, Backup and restore, Data deletion',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const DataAndPrivacyScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsTile(
+                context: context,
+                icon: Icons.category_outlined,
+                title: 'Categories',
+                subtitle: 'Manage task categories',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CategoriesScreen(),
                     ),
                   );
                 },
@@ -84,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 context: context,
                 icon: Icons.info_outline,
                 title: 'About',
-                subtitle: 'Version updates, Source Code, Telegram',
+                subtitle: 'Version ${AppConstants.appVersion}',
                 onTap: () {
                   Navigator.push(
                     context,

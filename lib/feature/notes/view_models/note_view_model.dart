@@ -48,13 +48,14 @@ class NoteViewModel extends Notifier<NoteState> {
     String? description,
     String? dueDate,
     Priority? priority,
+    int? taskType,
   ) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       await ref
           .read(noteRepositoryProvider)
-          .insertNote(title, description, dueDate, priority);
+          .insertNote(title, description, dueDate, priority, taskType);
       await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(
@@ -97,13 +98,14 @@ class NoteViewModel extends Notifier<NoteState> {
     String title,
     String? description,
     String? dueDate,
+    int? taskType,
   ) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       await ref
           .read(noteRepositoryProvider)
-          .updateNote(id, title, description, dueDate);
+          .updateNote(id, title, description, dueDate, taskType);
       await getAllNotes();
     } catch (e, s) {
       state = state.copyWith(

@@ -29,7 +29,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       note,
     ) {
       // Use dueDate if set, otherwise fall back to createdAt
-      final dateToMatch = note.dueDate ?? note.createdAt;
+      final dateToMatch = (note.dueDate ?? note.createdAt).toLocal();
       return dateToMatch.year == _selectedDate.year &&
           dateToMatch.month == _selectedDate.month &&
           dateToMatch.day == _selectedDate.day;
@@ -40,8 +40,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         .toList();
     final completedTasks = allTasksForDate.where((t) => t.isCompleted).toList();
 
-    incompleteTasks.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    completedTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    incompleteTasks.sort(
+      (a, b) => (a.dueDate ?? a.createdAt).compareTo(b.dueDate ?? b.createdAt),
+    );
+    completedTasks.sort(
+      (a, b) => (b.dueDate ?? b.createdAt).compareTo(a.dueDate ?? a.createdAt),
+    );
 
     final selectedTasks = [...incompleteTasks, ...completedTasks];
 
@@ -60,16 +64,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 100),
               itemCount: selectedTasks.length,
               itemBuilder: (context, index) {
                 return TaskCard(
                   id: selectedTasks[index].id,
                   title: selectedTasks[index].title,
                   description: selectedTasks[index].description ?? '',
-                  dueTime: selectedTasks[index].createdAt,
+                  dueTime:
+                      selectedTasks[index].dueDate ??
+                      selectedTasks[index].createdAt,
                   priority: selectedTasks[index].priority,
                   tags: [],
                   isCompleted: selectedTasks[index].isCompleted,
+                  taskType: selectedTasks[index].taskType,
                 );
               },
             ),

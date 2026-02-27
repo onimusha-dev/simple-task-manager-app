@@ -16,7 +16,7 @@ class NoTaskPlaceholder extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.only(left: 32, right: 32, bottom: 100),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

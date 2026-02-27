@@ -10,12 +10,12 @@ part of 'note_repository.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(noteRepository)
-const noteRepositoryProvider = NoteRepositoryProvider._();
+final noteRepositoryProvider = NoteRepositoryProvider._();
 
 final class NoteRepositoryProvider
     extends $FunctionalProvider<NoteRepository, NoteRepository, NoteRepository>
     with $Provider<NoteRepository> {
-  const NoteRepositoryProvider._()
+  NoteRepositoryProvider._()
     : super(
         from: null,
         argument: null,

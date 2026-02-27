@@ -47,3 +47,8 @@ class MotivationConstants {
     "Your future is created by what you do today.",
   ];
 }
+
+class AppConstants {
+  static const String appName = 'Fuck Your Todos';
+  static const String appVersion = '1.0.0';
+}
