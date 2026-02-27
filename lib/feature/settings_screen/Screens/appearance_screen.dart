@@ -66,197 +66,7 @@ class AppearanceScreen extends ConsumerWidget {
   }
 }
 
-class _LanguageSelector extends StatelessWidget {
-  const _LanguageSelector();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        'Language',
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(
-        'Change system language for app',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      trailing: const Icon(Icons.language_rounded),
-      onTap: () {
-        AppSettings.openAppSettings(type: AppSettingsType.settings);
-      },
-    );
-  }
-}
-
-class _DoubleTapExitToggle extends ConsumerWidget {
-  const _DoubleTapExitToggle();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final doubleTap = ref.watch(doubleTapToExitProvider);
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        'Double Tap to Exit',
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(
-        'Press twice on home screen to exit',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      trailing: Switch(
-        value: doubleTap,
-        onChanged: (value) {
-          ref.read(doubleTapToExitProvider.notifier).toggle();
-        },
-      ),
-    );
-  }
-}
-
-class _PureDarkToggle extends ConsumerWidget {
-  const _PureDarkToggle();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final pureDark = ref.watch(themeProvider).pureDark;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Opacity(
-      opacity: isDark ? 1.0 : 0.5,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: Text(
-          'Pure Dark',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          'Uses less power on AMOLED screens',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        trailing: Switch(
-          value: pureDark,
-          onChanged: isDark
-              ? (value) {
-                  ref.read(themeProvider.notifier).togglePureDark();
-                }
-              : null,
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeModeSelector extends ConsumerWidget {
-  final ThemeMode themeMode;
-  final ColorScheme colorScheme;
-
-  const _ThemeModeSelector({
-    required this.themeMode,
-    required this.colorScheme,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        'Theme Mode',
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(
-        _themeModeLabel(themeMode),
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-      trailing: PopupMenuButton<ThemeMode>(
-        initialValue: themeMode,
-        onSelected: (mode) {
-          ref.read(themeProvider.notifier).setThemeMode(mode);
-        },
-        offset: const Offset(0, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        color: colorScheme.surfaceContainerHighest,
-        itemBuilder: (context) => [
-          _buildThemeItem(context, ThemeMode.system, 'System', themeMode),
-          _buildThemeItem(context, ThemeMode.light, 'Light', themeMode),
-          _buildThemeItem(context, ThemeMode.dark, 'Dark', themeMode),
-        ],
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.arrow_drop_down_rounded,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 🧠 Converts enum → label
-  String _themeModeLabel(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.system:
-        return 'System';
-      case ThemeMode.dark:
-        return 'Dark';
-      case ThemeMode.light:
-        return 'Light';
-    }
-  }
-
-  PopupMenuItem<ThemeMode> _buildThemeItem(
-    BuildContext context,
-    ThemeMode value,
-    String label,
-    ThemeMode currentMode,
-  ) {
-    final cs = Theme.of(context).colorScheme;
-    final isSelected = currentMode == value;
-
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: cs.onSurface,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
-              ),
-            ),
-          ),
-          if (isSelected)
-            Icon(Icons.check_rounded, size: 16, color: cs.primary),
-        ],
-      ),
-    );
-  }
-}
-
+/// NOTE: this widget is used to preview the color schemes
 class _ThemePreviewCard extends ConsumerWidget {
   final AppThemePreset preset;
   final bool isSelected;
@@ -270,7 +80,7 @@ class _ThemePreviewCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🎨 Generate preview scheme
+    // Generate preview scheme
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final previewCs = ColorScheme.fromSeed(
       seedColor: preset.seedColor,
@@ -331,7 +141,7 @@ class _PreviewContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 Fake App Bar / Header
+        // Fake App Bar / Header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -355,21 +165,13 @@ class _PreviewContent extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-
-        // 🔹 Fake Content Item 1
         _buildFakeTask(previewCs, 0.8),
         const SizedBox(height: 8),
-
-        // 🔹 Fake Content Item 2
         _buildFakeTask(previewCs, 0.5),
         const SizedBox(height: 8),
-
-        // 🔹 Fake Content Item 3 (Completed)
         _buildFakeTask(previewCs, 0.7, isCompleted: true),
 
         const Spacer(),
-
-        // 🔹 Fake Floating Action Button
         Align(
           alignment: Alignment.bottomRight,
           child: Container(
@@ -450,3 +252,203 @@ class _PreviewContent extends StatelessWidget {
     );
   }
 }
+
+/// NOTE: this widget is used to select the theme mode
+/// modes: system, light, dark
+class _ThemeModeSelector extends ConsumerWidget {
+  final ThemeMode themeMode;
+  final ColorScheme colorScheme;
+
+  const _ThemeModeSelector({
+    required this.themeMode,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Theme Mode',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        _themeModeLabel(themeMode),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: PopupMenuButton<ThemeMode>(
+        initialValue: themeMode,
+        onSelected: (mode) {
+          ref.read(themeProvider.notifier).setThemeMode(mode);
+        },
+        offset: const Offset(0, 48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: colorScheme.surfaceContainerHighest,
+        itemBuilder: (context) => [
+          _buildThemeItem(context, ThemeMode.system, 'System', themeMode),
+          _buildThemeItem(context, ThemeMode.light, 'Light', themeMode),
+          _buildThemeItem(context, ThemeMode.dark, 'Dark', themeMode),
+        ],
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Converts enum -> label
+  String _themeModeLabel(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.system:
+        return 'System';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.light:
+        return 'Light';
+    }
+  }
+
+  PopupMenuItem<ThemeMode> _buildThemeItem(
+    BuildContext context,
+    ThemeMode value,
+    String label,
+    ThemeMode currentMode,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final isSelected = currentMode == value;
+
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: cs.onSurface,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (isSelected)
+            Icon(Icons.check_rounded, size: 16, color: cs.primary),
+        ],
+      ),
+    );
+  }
+}
+
+/// NOTE: this widget is used to toggle pure dark mode
+/// pure dark mode uses less power on AMOLED screens
+class _PureDarkToggle extends ConsumerWidget {
+  const _PureDarkToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pureDark = ref.watch(themeProvider).pureDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Opacity(
+      opacity: isDark ? 1.0 : 0.5,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        title: Text(
+          'Pure Dark',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          'Uses less power on AMOLED screens',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        trailing: Switch(
+          value: pureDark,
+          onChanged: isDark
+              ? (value) {
+                  ref.read(themeProvider.notifier).togglePureDark();
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// NOTE: this widget is used to select the language
+class _LanguageSelector extends StatelessWidget {
+  const _LanguageSelector();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Language',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        'Change system language for app',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: const Icon(Icons.language_rounded),
+      onTap: () {
+        AppSettings.openAppSettings(type: AppSettingsType.settings);
+      },
+    );
+  }
+}
+
+/// NOTE: this widget is used to toggle double tap to exit
+/// double tap to exit is a feature that allows the user to
+/// exit the app by double tapping on the home screen
+class _DoubleTapExitToggle extends ConsumerWidget {
+  const _DoubleTapExitToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final doubleTap = ref.watch(doubleTapToExitProvider);
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        'Double Tap to Exit',
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        'Press twice on home screen to exit',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Switch(
+        value: doubleTap,
+        onChanged: (value) {
+          ref.read(doubleTapToExitProvider.notifier).toggle();
+        },
+      ),
+    );
+  }
+}
+

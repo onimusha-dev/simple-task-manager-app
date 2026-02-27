@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -106,6 +105,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
               const _SectionHeader(title: 'Community & Source'),
               const SizedBox(height: 8),
               ListTile(
