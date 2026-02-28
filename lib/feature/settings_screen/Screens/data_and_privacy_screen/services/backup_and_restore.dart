@@ -1,11 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fuck_your_todos/core/constants/constants.dart';
 import 'package:fuck_your_todos/core/services/app_preferences.dart';
+import 'package:fuck_your_todos/core/services/notification_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class BackupAndRestoreService {
+  /// NOTE: calculate db size and return it as a string
+  /// returns a string
+  /// eg: '10 MB' or '500 KB' or 'Error calc' -> for errors
   Future<String> calculateDbSize() async {
     try {
       final dir = await getApplicationSupportDirectory();
@@ -37,126 +44,167 @@ class BackupAndRestoreService {
     }
   }
 
-  Future<String> createBackup() async {
+  /// NOTE: create backup and send notification on success or failure
+  /// this creates a zip file and saves it to the device
+  /// returns void
+  Future<void> createBackup() async {
     try {
       final appDir = await getApplicationSupportDirectory();
       final dbFile = File(p.join(appDir.path, DatabaseConstants.fileName));
 
-      if (!await dbFile.exists()) return 'No database found to backup';
-
-      final String? selectedDirectory = await FilePicker.platform
-          .getDirectoryPath();
-      if (selectedDirectory == null) return 'User canceled';
-
-      final appName = AppConstants.appName.replaceAll(' ', '_');
-      final backupFolder = Directory(p.join(selectedDirectory, appName));
-      if (!await backupFolder.exists()) {
-        await backupFolder.create(recursive: true);
+      if (!await dbFile.exists()) {
+        throw Exception('No database found to backup');
       }
 
-      final dbBackupFile = File(
-        p.join(backupFolder.path, DatabaseConstants.fileName),
+      final archive = Archive();
+
+      archive.addFile(
+        ArchiveFile(
+          DatabaseConstants.fileName,
+          dbFile.lengthSync(),
+          dbFile.readAsBytesSync(),
+        ),
       );
-      await dbFile.copy(dbBackupFile.path);
 
       final walFile = File(p.join(appDir.path, DatabaseConstants.walFileName));
       if (await walFile.exists()) {
-        final walBackupFile = File(
-          p.join(backupFolder.path, DatabaseConstants.walFileName),
+        archive.addFile(
+          ArchiveFile(
+            DatabaseConstants.walFileName,
+            walFile.lengthSync(),
+            walFile.readAsBytesSync(),
+          ),
         );
-        await walFile.copy(walBackupFile.path);
       }
 
       final shmFile = File(p.join(appDir.path, DatabaseConstants.shmFileName));
       if (await shmFile.exists()) {
-        final shmBackupFile = File(
-          p.join(backupFolder.path, DatabaseConstants.shmFileName),
+        archive.addFile(
+          ArchiveFile(
+            DatabaseConstants.shmFileName,
+            shmFile.lengthSync(),
+            shmFile.readAsBytesSync(),
+          ),
         );
-        await shmFile.copy(shmBackupFile.path);
       }
 
       final prefsJson = AppPreferences.exportToJson();
-      final settingsFile = File(p.join(backupFolder.path, 'settings.json'));
-      await settingsFile.writeAsString(prefsJson);
+      final prefsBytes = utf8.encode(prefsJson);
+      archive.addFile(
+        ArchiveFile('settings.json', prefsBytes.length, prefsBytes),
+      );
 
-      return 'Backup saved natively to ${backupFolder.path}';
+      final zipData = ZipEncoder().encode(archive);
+
+      final appName = AppConstants.appName.replaceAll(' ', '_');
+      final dateStr = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .split('.')
+          .first;
+      final fileName = '${appName}_backup_$dateStr.zip';
+
+      final String? selectedPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save backup file',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        bytes: Uint8List.fromList(zipData),
+      );
+
+      if (selectedPath == null) {
+        throw Exception('User canceled');
+      }
+
+      // send notification on backup save
+      NotificationService().showInstantBackupAndRestoreNotification(
+        id: 1,
+        title: 'Backup saved',
+        body: 'Backup saved as ${p.basename(selectedPath)}',
+      );
     } catch (e) {
-      return 'Failed to save backup: $e';
+      // send notification on backup save failure
+      NotificationService().showInstantBackupAndRestoreNotification(
+        id: 1,
+        title: 'Backup save failed',
+        body: 'Failed to save backup: $e',
+      );
     }
   }
 
-  Future<String> restoreBackup() async {
+  /// NOTE: restore backup and send notification on success or failure
+  /// this imports a zip file and restores the database and settings
+  /// returns void
+  Future<void> restoreBackup() async {
     try {
-      final String? selectedDirectory = await FilePicker.platform
-          .getDirectoryPath();
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
 
       // handles backup selection
-      if (selectedDirectory != null) {
-        Directory extractDir = Directory(selectedDirectory);
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        final bytes = File(filePath).readAsBytesSync();
+        final archive = ZipDecoder().decodeBytes(bytes);
 
-        Directory? restoredFolder;
-        final allEntities = extractDir.listSync(recursive: true);
+        final appDir = await getApplicationSupportDirectory();
 
-        for (final entity in allEntities) {
-          if (entity is File) {
-            final basename = p.basename(entity.path);
-            if (basename == 'db.sqlite' ||
-                basename == 'journal_app_db.sqlite') {
-              restoredFolder = entity.parent;
-              if (basename == 'journal_app_db.sqlite') {
-                await entity.rename(p.join(restoredFolder.path, 'db.sqlite'));
-              }
+        bool hasDb = false;
+
+        for (final file in archive) {
+          if (file.isFile) {
+            if (file.name == DatabaseConstants.fileName ||
+                file.name == 'journal_app_db.sqlite') {
+              hasDb = true;
               break;
             }
           }
         }
 
-        if (restoredFolder == null) {
-          throw Exception('Invalid backup folder, Database can not be found');
+        if (!hasDb) {
+          throw Exception('Invalid backup file. Database not found.');
         }
 
-        final appDir = await getApplicationSupportDirectory();
-        final dbFile = File(
-          p.join(restoredFolder.path, DatabaseConstants.fileName),
-        );
-        if (await dbFile.exists()) {
-          final targetDbFile = File(
-            p.join(appDir.path, DatabaseConstants.fileName),
-          );
-          await dbFile.copy(targetDbFile.path);
+        for (final file in archive) {
+          if (file.isFile) {
+            final data = file.content as List<int>;
 
-          final walFile = File(
-            p.join(restoredFolder.path, DatabaseConstants.walFileName),
-          );
-          final targetWalFile = File(
-            p.join(appDir.path, DatabaseConstants.walFileName),
-          );
-          if (await walFile.exists()) await walFile.copy(targetWalFile.path);
-          if (await targetWalFile.exists()) await targetWalFile.delete();
+            String fileName = file.name;
+            if (fileName == 'journal_app_db.sqlite') {
+              fileName = DatabaseConstants.fileName; // Backward compatibility
+            }
 
-          final shmFile = File(
-            p.join(restoredFolder.path, DatabaseConstants.shmFileName),
-          );
-          final targetShmFile = File(
-            p.join(appDir.path, DatabaseConstants.shmFileName),
-          );
-          if (await shmFile.exists()) await shmFile.copy(targetShmFile.path);
-          if (await targetShmFile.exists()) await targetShmFile.delete();
-        }
-
-        final settingsFile = File(p.join(restoredFolder.path, 'settings.json'));
-        if (await settingsFile.exists()) {
-          final jsonStr = await settingsFile.readAsString();
-          await AppPreferences.importFromJson(jsonStr);
+            if (fileName == DatabaseConstants.fileName ||
+                fileName == DatabaseConstants.walFileName ||
+                fileName == DatabaseConstants.shmFileName) {
+              File(p.join(appDir.path, fileName))
+                ..createSync(recursive: true)
+                ..writeAsBytesSync(data);
+            } else if (fileName == 'settings.json') {
+              final jsonStr = utf8.decode(data);
+              await AppPreferences.importFromJson(jsonStr);
+            }
+          }
         }
 
         await calculateDbSize();
 
-        return 'Folder backup restored successfully. Please restart app to see effects.';
+        // send notification on backup restore
+        NotificationService().showInstantBackupAndRestoreNotification(
+          id: 1,
+          title: 'Backup restored',
+          body:
+              'Backup restored successfully. Please restart app to see effects.',
+        );
       }
-      return 'No backup folder selected';
     } catch (e) {
-      return 'Failed to restore backup: $e';
+      // send notification on backup restore failure
+      NotificationService().showInstantBackupAndRestoreNotification(
+        id: 1,
+        title: 'Backup restore failed',
+        body: 'Failed to restore backup: $e',
+      );
     }
   }
 }

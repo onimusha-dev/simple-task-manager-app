@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calendar_date_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
+import 'package:fuck_your_todos/feature/error_screen/test.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
 import 'package:fuck_your_todos/feature/profile_screen/analytics_screen.dart';
-import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen/data_and_privacy_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/settings_screen.dart';
 
 class MainAppScreen extends ConsumerStatefulWidget {
@@ -26,7 +26,7 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
   final List<Widget> pages = [
     HomeScreen(),
     CalendarScreen(),
-    PeriodicBackupsScreen(),
+    TestScreen(),
     AnalyticsScreen(),
   ];
 

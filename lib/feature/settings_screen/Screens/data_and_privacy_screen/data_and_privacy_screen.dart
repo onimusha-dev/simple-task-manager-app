@@ -75,27 +75,13 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                 title: 'Create data backup',
                 subtitle: 'Export your data to a secure file',
                 icon: Icons.save_outlined,
-                onTap: () async {
-                  final value = await BackupAndRestoreService().createBackup();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(value)));
-                  }
-                },
+                onTap: () async => BackupAndRestoreService().createBackup(),
               ),
               _ListViewItem(
                 title: 'Restore from backup',
                 subtitle: 'Import existing backup file',
                 icon: Icons.restore_outlined,
-                onTap: () async {
-                  final value = await BackupAndRestoreService().restoreBackup();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(value)));
-                  }
-                },
+                onTap: () async => BackupAndRestoreService().restoreBackup(),
               ),
               _ListViewItem(
                 title: 'Periodic backups',
