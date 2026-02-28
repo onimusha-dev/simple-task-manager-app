@@ -8,6 +8,7 @@ import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';
 import 'package:fuck_your_todos/feature/notes/widgets/create_note_view.dart';
 import 'package:fuck_your_todos/feature/profile_screen/analytics_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen/data_and_privacy_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/settings_screen.dart';
 
 class MainAppScreen extends ConsumerStatefulWidget {
@@ -25,7 +26,7 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
   final List<Widget> pages = [
     HomeScreen(),
     CalendarScreen(),
-    Placeholder(),
+    PeriodicBackupsScreen(),
     AnalyticsScreen(),
   ];
 
@@ -103,22 +104,15 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
+                // Theme.of(context).colorScheme.primary,
+                // Theme.of(context).colorScheme.secondary,
+                Colors.blue,
+                Colors.red,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
           ),
           child: Material(
             color: Colors.transparent,
@@ -152,10 +146,10 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
           context: context,
           removeBottom: true,
           child: BottomAppBar(
-            height: 80,
+            height: 64,
             padding: EdgeInsets.zero,
-            notchMargin: 12,
-            color: Colors.transparent,
+            notchMargin: 10,
+            color: Theme.of(context).colorScheme.surface,
             elevation: 0,
             shadowColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
@@ -199,6 +193,7 @@ class _MainAppScreenState extends ConsumerState<MainAppScreen> {
     );
   }
 
+  /// NOTE: widget for building bottom nav bar options
   Widget _buildTabItem({
     required int index,
     required IconData icon,

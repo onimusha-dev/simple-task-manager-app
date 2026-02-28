@@ -53,7 +53,22 @@ class _DataAndPrivacyScreenState extends ConsumerState<DataAndPrivacyScreen> {
                 ),
                 trailing: Switch(value: false, onChanged: (value) => ()),
               ),
-
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text(
+                  'Anonymous Error Reporting',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  'Send anonymous error reports to help improve the app',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: Switch(value: false, onChanged: (value) => ()),
+              ),
               const SizedBox(height: 24),
               const _SectionHeader(title: 'Backup and Restore'),
               _ListViewItem(
@@ -175,7 +190,7 @@ class _ListViewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       title: Text(
         title,
         style: Theme.of(

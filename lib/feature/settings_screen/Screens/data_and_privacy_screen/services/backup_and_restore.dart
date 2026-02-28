@@ -37,8 +37,6 @@ class BackupAndRestoreService {
     }
   }
 
-  /// WIP: this is a temporary solution
-  /// we need to use the drift backup and restore feature
   Future<String> createBackup() async {
     try {
       final appDir = await getApplicationSupportDirectory();

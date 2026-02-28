@@ -24,24 +24,10 @@ class _AboutScreenState extends State<AboutScreen> {
             children: [
               const _SectionHeader(title: 'App Info'),
               const SizedBox(height: 8),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'Version',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  '1.0.0',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.info_outline_rounded,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              _ListViewItem(
+                title: 'Version',
+                subtitle: '1.0.0',
+                icon: Icons.info_outline_rounded,
                 onTap: () async {
                   try {
                     final result = await InternetAddress.lookup('google.com');
@@ -107,25 +93,10 @@ class _AboutScreenState extends State<AboutScreen> {
               const SizedBox(height: 24),
 
               const _SectionHeader(title: 'Community & Source'),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'Source code',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  'View the source code on GitHub',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.code_rounded,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              _ListViewItem(
+                title: 'Source code',
+                subtitle: 'View the source code on GitHub',
+                icon: Icons.code_rounded,
                 onTap: () {
                   launchUrl(
                     Uri.parse(
@@ -135,24 +106,10 @@ class _AboutScreenState extends State<AboutScreen> {
                   );
                 },
               ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'Telegram group',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  'Join the community and chat with others',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              _ListViewItem(
+                title: 'Telegram group',
+                subtitle: 'Join the community and chat with others',
+                icon: Icons.chat_bubble_outline_rounded,
                 onTap: () {
                   launchUrl(
                     Uri.parse('https://t.me/+3sRfr-qGQ4BkZDRl'),
@@ -160,7 +117,6 @@ class _AboutScreenState extends State<AboutScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -169,6 +125,51 @@ class _AboutScreenState extends State<AboutScreen> {
   }
 }
 
+/// Note: move this page to a file in core
+/// useage: this should be used in places
+/// where the list item are just btns with icon and text
+/// and no other functionality
+///
+/// we might use this as a template for other settings pages
+/// when it happens move this widget to that file too
+class _ListViewItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ListViewItem({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+/// NOTE: helper widget to create a section header
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});

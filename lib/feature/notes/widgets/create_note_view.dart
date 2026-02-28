@@ -230,301 +230,306 @@ class _CreateNoteViewState extends ConsumerState<CreateNoteView> {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 16,
-        bottom: keyboardHeight > 0 ? keyboardHeight + 16 : bottomPadding + 24,
-      ),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Drag handle ──
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: cs.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: keyboardHeight > 0 ? keyboardHeight + 16 : bottomPadding + 24,
+        ),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Drag handle ──
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: cs.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
 
-          // ── Header ──
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  _isEditMode ? Icons.edit_note_rounded : Icons.add_task,
-                  color: cs.onPrimaryContainer,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                _isEditMode ? 'Edit Note' : 'New Note',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: cs.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // ── Title ──
-          _buildTextField(
-            controller: _titleController,
-            hint: 'Note title…',
-            cs: cs,
-            type: TextFieldType.title,
-          ),
-          const SizedBox(height: 12),
-
-          // ── Description ──
-          _buildTextField(
-            controller: _descriptionController,
-            hint: 'Description (optional)',
-            cs: cs,
-            maxLines: 3,
-            type: TextFieldType.description,
-          ),
-          const SizedBox(height: 20),
-
-          // ── Action chips ──
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              // Date/time chip
-              _NoteChip(
-                icon: Icons.schedule_rounded,
-                label: _selectedDateTime != null
-                    ? _formatDateTime(_selectedDateTime!)
-                    : 'Set time',
-                color: _selectedDateTime != null ? cs.primary : cs.outline,
-                onTap: _pickDateTime,
-                onClear: _selectedDateTime != null
-                    ? () => setState(() => _selectedDateTime = null)
-                    : null,
-              ),
-
-              // Priority chip — tap to open menu (when none); tap to clear (when set)
-              PopupMenuButton<Priority>(
-                key: _priorityMenuKey,
-                onSelected: (p) => setState(() => _selectedPriority = p),
-                offset: const Offset(0, -120),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                color: cs.surfaceContainerHighest,
-                itemBuilder: (_) =>
-                    [Priority.high, Priority.medium, Priority.low].map((p) {
-                      final isSelected = _selectedPriority == p;
-                      return PopupMenuItem<Priority>(
-                        value: p,
-                        child: Row(
-                          children: [
-                            Icon(
-                              _priorityIcon(p),
-                              color: _priorityColor(p),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _priorityLabel(p),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: cs.onSurface,
-                                      fontWeight: isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                              ),
-                            ),
-                            if (isSelected)
-                              Icon(
-                                Icons.check_rounded,
-                                size: 16,
-                                color: _priorityColor(p),
-                              ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                child: _NoteChip(
-                  icon: _priorityIcon(_selectedPriority),
-                  label: _priorityLabel(_selectedPriority),
-                  color: _priorityColor(_selectedPriority),
-                  // If a priority is set: clear it. If none: open the menu.
-                  onTap: () {
-                    if (_selectedPriority != Priority.none) {
-                      setState(() => _selectedPriority = Priority.none);
-                    } else {
-                      _priorityMenuKey.currentState?.showButtonMenu();
-                    }
-                  },
-                ),
-              ),
-
-              // Category chip
-              Consumer(
-                builder: (context, ref, child) {
-                  final categoriesAsync = ref.watch(
-                    taskCategoryViewModelProvider,
-                  );
-                  return categoriesAsync.maybeWhen(
-                    data: (categories) {
-                      if (categories.isEmpty) return const SizedBox.shrink();
-
-                      final selectedCategory = categories
-                          .cast<TaskCategoriesTableData?>()
-                          .firstWhere(
-                            (c) => c?.id == _selectedTaskType,
-                            orElse: () => null,
-                          );
-
-                      return PopupMenuButton<int>(
-                        key: _categoryMenuKey,
-                        onSelected: (id) {
-                          if (id == -1) {
-                            // Trigger 'Add Category' flow
-                            _showAddCategoryInline(context, ref);
-                          } else {
-                            setState(() => _selectedTaskType = id);
-                          }
-                        },
-                        offset: const Offset(0, -120),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        color: cs.surfaceContainerHighest,
-                        itemBuilder: (_) => [
-                          ...categories.map((c) {
-                            final isSelected = _selectedTaskType == c.id;
-                            return PopupMenuItem<int>(
-                              value: c.id,
-                              child: Row(
-                                children: [
-                                  Text(c.icon),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      c.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: cs.onSurface,
-                                            fontWeight: isSelected
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      Icons.check_rounded,
-                                      size: 16,
-                                      color: cs.primary,
-                                    ),
-                                ],
-                              ),
-                            );
-                          }),
-                          const PopupMenuDivider(),
-                          PopupMenuItem<int>(
-                            value:
-                                -1, // Use -1 as a special value to trigger 'Add Category'
-                            child: Row(
-                              children: [
-                                Icon(Icons.add_rounded, color: cs.primary),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Add new category',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: cs.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        child: _NoteChip(
-                          icon: Icons.category_rounded,
-                          label: selectedCategory == null
-                              ? 'Category'
-                              : selectedCategory.name,
-                          color: selectedCategory == null
-                              ? cs.outline
-                              : cs.primary,
-                          onTap: () {
-                            if (_selectedTaskType != null) {
-                              setState(() => _selectedTaskType = null);
-                            } else {
-                              _categoryMenuKey.currentState?.showButtonMenu();
-                            }
-                          },
-                        ),
-                      );
-                    },
-                    orElse: () => const SizedBox.shrink(),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // ── Save button ──
-          SizedBox(
-            width: double.infinity,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              child: ElevatedButton.icon(
-                onPressed: _canSave ? _save : null,
-                icon: Icon(
-                  _isEditMode
-                      ? Icons.check_circle_outline
-                      : Icons.add_circle_outline,
-                  size: 20,
-                ),
-                label: Text(
-                  _isEditMode ? 'Update Note' : 'Create Note',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+            // ── Header ──
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    _isEditMode ? Icons.edit_note_rounded : Icons.add_task,
+                    color: cs.onPrimaryContainer,
+                    size: 20,
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: cs.primary,
-                  foregroundColor: cs.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                const SizedBox(width: 12),
+                Text(
+                  _isEditMode ? 'Edit Note' : 'New Note',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ── Title ──
+            _buildTextField(
+              controller: _titleController,
+              hint: 'Note title…',
+              cs: cs,
+              type: TextFieldType.title,
+            ),
+            const SizedBox(height: 12),
+
+            // ── Description ──
+            _buildTextField(
+              controller: _descriptionController,
+              hint: 'Description (optional)',
+              cs: cs,
+              maxLines: 3,
+              type: TextFieldType.description,
+            ),
+            const SizedBox(height: 20),
+
+            // ── Action chips ──
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // Date/time chip
+                _NoteChip(
+                  icon: Icons.schedule_rounded,
+                  label: _selectedDateTime != null
+                      ? _formatDateTime(_selectedDateTime!)
+                      : 'Set time',
+                  color: _selectedDateTime != null ? cs.primary : cs.outline,
+                  onTap: _pickDateTime,
+                  onClear: _selectedDateTime != null
+                      ? () => setState(() => _selectedDateTime = null)
+                      : null,
+                ),
+
+                // Priority chip — tap to open menu (when none); tap to clear (when set)
+                PopupMenuButton<Priority>(
+                  key: _priorityMenuKey,
+                  onSelected: (p) => setState(() => _selectedPriority = p),
+                  offset: const Offset(0, -120),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  disabledBackgroundColor: cs.surfaceContainerHigh,
-                  disabledForegroundColor: cs.outline,
+                  color: cs.surfaceContainerHighest,
+                  itemBuilder: (_) =>
+                      [Priority.high, Priority.medium, Priority.low].map((p) {
+                        final isSelected = _selectedPriority == p;
+                        return PopupMenuItem<Priority>(
+                          value: p,
+                          child: Row(
+                            children: [
+                              Icon(
+                                _priorityIcon(p),
+                                color: _priorityColor(p),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _priorityLabel(p),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: cs.onSurface,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_rounded,
+                                  size: 16,
+                                  color: _priorityColor(p),
+                                ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                  child: _NoteChip(
+                    icon: _priorityIcon(_selectedPriority),
+                    label: _priorityLabel(_selectedPriority),
+                    color: _priorityColor(_selectedPriority),
+                    // If a priority is set: clear it. If none: open the menu.
+                    onTap: () {
+                      if (_selectedPriority != Priority.none) {
+                        setState(() => _selectedPriority = Priority.none);
+                      } else {
+                        _priorityMenuKey.currentState?.showButtonMenu();
+                      }
+                    },
+                  ),
+                ),
+
+                // Category chip
+                Consumer(
+                  builder: (context, ref, child) {
+                    final categoriesAsync = ref.watch(
+                      taskCategoryViewModelProvider,
+                    );
+                    return categoriesAsync.maybeWhen(
+                      data: (categories) {
+                        if (categories.isEmpty) return const SizedBox.shrink();
+
+                        final selectedCategory = categories
+                            .cast<TaskCategoriesTableData?>()
+                            .firstWhere(
+                              (c) => c?.id == _selectedTaskType,
+                              orElse: () => null,
+                            );
+
+                        return PopupMenuButton<int>(
+                          key: _categoryMenuKey,
+                          onSelected: (id) {
+                            if (id == -1) {
+                              // Trigger 'Add Category' flow
+                              _showAddCategoryInline(context, ref);
+                            } else {
+                              setState(() => _selectedTaskType = id);
+                            }
+                          },
+                          offset: const Offset(0, -120),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          color: cs.surfaceContainerHighest,
+                          itemBuilder: (_) => [
+                            ...categories.map((c) {
+                              final isSelected = _selectedTaskType == c.id;
+                              return PopupMenuItem<int>(
+                                value: c.id,
+                                child: Row(
+                                  children: [
+                                    Text(c.icon),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        c.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: cs.onSurface,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(
+                                        Icons.check_rounded,
+                                        size: 16,
+                                        color: cs.primary,
+                                      ),
+                                  ],
+                                ),
+                              );
+                            }),
+                            const PopupMenuDivider(),
+                            PopupMenuItem<int>(
+                              value:
+                                  -1, // Use -1 as a special value to trigger 'Add Category'
+                              child: Row(
+                                children: [
+                                  Icon(Icons.add_rounded, color: cs.primary),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Add new category',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: cs.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          child: _NoteChip(
+                            icon: Icons.category_rounded,
+                            label: selectedCategory == null
+                                ? 'Category'
+                                : selectedCategory.name,
+                            color: selectedCategory == null
+                                ? cs.outline
+                                : cs.primary,
+                            onTap: () {
+                              if (_selectedTaskType != null) {
+                                setState(() => _selectedTaskType = null);
+                              } else {
+                                _categoryMenuKey.currentState?.showButtonMenu();
+                              }
+                            },
+                          ),
+                        );
+                      },
+                      orElse: () => const SizedBox.shrink(),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // ── Save button ──
+            SizedBox(
+              width: double.infinity,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                child: ElevatedButton.icon(
+                  onPressed: _canSave ? _save : null,
+                  icon: Icon(
+                    _isEditMode
+                        ? Icons.check_circle_outline
+                        : Icons.add_circle_outline,
+                    size: 20,
+                  ),
+                  label: Text(
+                    _isEditMode ? 'Update Note' : 'Create Note',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    foregroundColor: cs.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    disabledBackgroundColor: cs.surfaceContainerHigh,
+                    disabledForegroundColor: cs.outline,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
