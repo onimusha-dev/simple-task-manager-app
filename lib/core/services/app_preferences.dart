@@ -22,6 +22,7 @@ class AppPreferences {
   static const String keyPureDark = 'pure_dark';
   static const String keyDoubleTapToExit = 'double_tap_to_exit';
   static const String keyBackupLocation = 'backup_location';
+  static const String keyOnboardingCompleted = 'onboarding_completed';
 
   // Helper methods
   static String? getPreference(String key) => instance.getString(key);
