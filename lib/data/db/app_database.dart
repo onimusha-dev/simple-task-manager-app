@@ -4,6 +4,7 @@ import 'package:fuck_your_todos/data/db/dao/note_dao.dart';
 import 'package:fuck_your_todos/data/db/dao/task_category_dao.dart';
 import 'package:fuck_your_todos/data/db/tables/note_table.dart';
 import 'package:fuck_your_todos/data/db/tables/task_categories_table.dart';
+import 'package:fuck_your_todos/core/constants/constants.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -53,7 +54,7 @@ class AppDatabase extends _$AppDatabase {
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
-      name: 'journal_app_db',
+      name: DatabaseConstants.name,
       native: const DriftNativeOptions(
         databaseDirectory: getApplicationSupportDirectory,
       ),

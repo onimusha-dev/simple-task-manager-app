@@ -21,9 +21,6 @@ class AppPreferences {
   static const String keyThemePreset = 'theme_preset';
   static const String keyPureDark = 'pure_dark';
   static const String keyDoubleTapToExit = 'double_tap_to_exit';
-  static const String keyAppProtectionEnabled = 'app_protection_enabled';
-  static const String keyAppProtectionType =
-      'app_protection_type'; // 'biometrics' or 'pin'
   static const String keyBackupLocation = 'backup_location';
 
   // Helper methods

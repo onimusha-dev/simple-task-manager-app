@@ -52,3 +52,12 @@ class AppConstants {
   static const String appName = 'Fuck Your Todos';
   static const String appVersion = '1.0.0';
 }
+
+class DatabaseConstants {
+  static const String name = 'journal_app_db';
+
+  // Drift appends '.sqlite' to the database name by default
+  static const String fileName = '$name.sqlite';
+  static const String walFileName = '$fileName-wal';
+  static const String shmFileName = '$fileName-shm';
+}

@@ -5,7 +5,7 @@ import 'package:fuck_your_todos/core/utils/date_formatter.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/account_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/appearance_screen.dart';
-import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen.dart';
+import 'package:fuck_your_todos/feature/settings_screen/Screens/data_and_privacy_screen/data_and_privacy_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/categories_screen/categories_screen.dart';
 import 'package:fuck_your_todos/feature/settings_screen/Screens/about_screen.dart';
 
