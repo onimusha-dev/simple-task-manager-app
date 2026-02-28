@@ -1,4 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:fuck_your_todos/main.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -37,7 +39,13 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        // Handle notification interaction
+        if (response.payload == 'restart_app' ||
+            response.actionId == 'restart_app_action') {
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            Phoenix.rebirth(context);
+          }
+        }
       },
     );
 
@@ -65,23 +73,34 @@ class NotificationService {
     required String title,
     required String body,
     String? payload,
+    bool showRestartButton = false,
   }) async {
     if (!_isInitialized) {
       await init();
     }
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
           'instant_backup_and_restore_channel_id',
           'Backup and restore',
           importance: Importance.max,
           priority: Priority.high,
+          actions: showRestartButton
+              ? <AndroidNotificationAction>[
+                  const AndroidNotificationAction(
+                    'restart_app_action',
+                    'Restart App',
+                    cancelNotification: true,
+                    showsUserInterface: true,
+                  ),
+                ]
+              : null,
         );
 
     const DarwinNotificationDetails iosNotificationDetails =
         DarwinNotificationDetails();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iosNotificationDetails,
     );
@@ -91,7 +110,7 @@ class NotificationService {
       title: title,
       body: body,
       notificationDetails: platformChannelSpecifics,
-      payload: payload,
+      payload: 'restart_app',
     );
   }
 

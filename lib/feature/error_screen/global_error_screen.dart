@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 class GlobalErrorScreen extends StatelessWidget {
   final FlutterErrorDetails errorDetails;
@@ -90,7 +91,7 @@ class GlobalErrorScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: () {
                           // Trigger the global restart routine at the root level!
-                          AppRestarter.restartApp(context);
+                          Phoenix.rebirth(context);
                         },
                         icon: const Icon(
                           Icons.refresh_rounded,
@@ -117,34 +118,5 @@ class GlobalErrorScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// A wrapper to restart the entire app tree from scratch when instructed.
-class AppRestarter extends StatefulWidget {
-  final Widget child;
-
-  const AppRestarter({super.key, required this.child});
-
-  static void restartApp(BuildContext context) {
-    context.findAncestorStateOfType<_AppRestarterState>()?.restartApp();
-  }
-
-  @override
-  State<AppRestarter> createState() => _AppRestarterState();
-}
-
-class _AppRestarterState extends State<AppRestarter> {
-  Key _key = UniqueKey();
-
-  void restartApp() {
-    setState(() {
-      _key = UniqueKey(); // Re-creates the whole underlying tree!
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return KeyedSubtree(key: _key, child: widget.child);
   }
 }

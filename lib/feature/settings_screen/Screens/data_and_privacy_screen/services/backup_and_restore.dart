@@ -196,6 +196,7 @@ class BackupAndRestoreService {
           title: 'Backup restored',
           body:
               'Backup restored successfully. Please restart app to see effects.',
+          showRestartButton: true,
         );
       }
     } catch (e) {

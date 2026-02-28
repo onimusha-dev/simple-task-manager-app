@@ -33,6 +33,7 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   flutter_local_notifications: ^20.1.0
   archive: ^4.0.9
+  flutter_phoenix: ^1.1.1
 
 dev_dependencies:
   flutter_test:

@@ -2,10 +2,13 @@ import 'package:flutter/services.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
 import 'package:fuck_your_todos/main_app_screen.dart';
 import 'package:fuck_your_todos/feature/error_screen/global_error_screen.dart';
 import 'package:fuck_your_todos/core/services/app_preferences.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +33,7 @@ void main() async {
     return GlobalErrorScreen(errorDetails: details);
   };
 
-  runApp(AppRestarter(child: ProviderScope(child: MyApp())));
+  runApp(Phoenix(child: ProviderScope(child: MyApp())));
 }
 
 class MyApp extends ConsumerWidget {
@@ -61,6 +64,7 @@ class MyApp extends ConsumerWidget {
         }
 
         return MaterialApp(
+          navigatorKey: navigatorKey,
           theme: buildTheme(lightScheme, Brightness.light, false),
           darkTheme: buildTheme(darkScheme, Brightness.dark, pureDark),
           themeMode: themeMode,
