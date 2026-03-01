@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fuck_your_todos/feature/calender_screen/calendar_date_provider.dart';
+import 'package:fuck_your_todos/feature/calender_screen/provider/calendar_date_provider.dart';
+import 'package:fuck_your_todos/feature/calender_screen/widgets/shownotes.dart';
 import 'package:fuck_your_todos/feature/notes/view_models/note_view_model.dart';
-
-import 'package:fuck_your_todos/feature/notes/widgets/tasks_cards.dart';
 import 'widgets/week_carousel_widget.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -59,28 +58,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ref.read(selectedCalendarDateProvider.notifier).setDate(date);
           },
         ),
-        SizedBox(height: 16),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListView.builder(
-              padding: const EdgeInsets.only(bottom: 100),
-              itemCount: selectedTasks.length,
-              itemBuilder: (context, index) {
-                return TaskCard(
-                  id: selectedTasks[index].id,
-                  title: selectedTasks[index].title,
-                  description: selectedTasks[index].description ?? '',
-                  dueTime:
-                      selectedTasks[index].dueDate ??
-                      selectedTasks[index].createdAt,
-                  priority: selectedTasks[index].priority,
-                  tags: [],
-                  isCompleted: selectedTasks[index].isCompleted,
-                  taskType: selectedTasks[index].taskType,
-                );
-              },
-            ),
+          child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 80),
+            itemCount:
+                selectedTasks.length + (selectedTasks.isNotEmpty ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == selectedTasks.length) {
+                final lastTask = selectedTasks.last;
+                final lastTime = (lastTask.dueDate ?? lastTask.createdAt);
+                // Just add 1 hour or something for the footer timestamp
+                final footerTime = lastTime.add(const Duration(hours: 1));
+                return TimelineFooter(time: footerTime);
+              }
+              final task = selectedTasks[index];
+              return Shownotes(
+                id: task.id,
+                title: task.title,
+                description: task.description ?? '',
+                dueTime: task.dueDate ?? task.createdAt,
+                priority: task.priority,
+                tags: const [],
+                isCompleted: task.isCompleted,
+                taskType: task.taskType,
+              );
+            },
           ),
         ),
       ],

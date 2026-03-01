@@ -101,8 +101,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.black.withOpacity(0.8),
+                          Colors.black.withValues(alpha: 0.3),
+                          Colors.black.withValues(alpha: 0.8),
                         ],
                       ),
                     ),
@@ -186,8 +186,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             backgroundOpacity,
                           );
                           final inactiveColor = Color.lerp(
-                            theme.colorScheme.primary.withOpacity(0.2),
-                            Colors.white.withOpacity(0.3),
+                            theme.colorScheme.primary.withValues(alpha: 0.2),
+                            Colors.white.withValues(alpha: 0.3),
                             backgroundOpacity,
                           );
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuck_your_todos/core/theme/theme_provider.dart';
-import 'package:fuck_your_todos/feature/calender_screen/calendar_date_provider.dart';
+import 'package:fuck_your_todos/feature/calender_screen/provider/calendar_date_provider.dart';
 import 'package:fuck_your_todos/feature/calender_screen/calender_screen.dart';
 import 'package:fuck_your_todos/feature/error_screen/test.dart';
 import 'package:fuck_your_todos/feature/home_screen/home_screen.dart';

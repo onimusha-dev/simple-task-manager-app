@@ -100,7 +100,7 @@ class _OnboardingThemePreviewCard extends ConsumerWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: previewCs.primary.withOpacity(0.2),
+                          color: previewCs.primary.withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
